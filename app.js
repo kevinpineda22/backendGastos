@@ -9,7 +9,13 @@ dotenv.config();
 const app = express();
 
 // Configuración de CORS para permitir solicitudes desde cualquier dominio
-app.use(cors()); // Aplica CORS globalmente a todas las rutas
+const corsOptions = {
+  origin: '*', // Permitir cualquier origen
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'], // Métodos permitidos
+  allowedHeaders: ['Content-Type'], // Cabeceras permitidas
+};
+
+app.use(cors(corsOptions)); // Aplica CORS globalmente a todas las rutas
 
 // Configuración de middlewares
 app.use(bodyParser.json());
@@ -20,8 +26,8 @@ app.get('/ping', (req, res) => {
 });
 
 // Rutas API
-app.use('/api', requerimientosRoutes);
-app.use('/', requerimientosRoutes);
+app.use('/api', requerimientosRoutes); // Rutas bajo /api
+app.use('/', requerimientosRoutes); // Rutas adicionales si es necesario
 
 // Exporta la aplicación para que Vercel la pueda manejar
 export default app;
