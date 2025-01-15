@@ -1,3 +1,4 @@
+// 📂 controllers/requerimientosController.js
 import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
@@ -6,8 +7,10 @@ import crypto from 'crypto';
 export const crearRequerimiento = async (req, res) => {
   const { empleado_id, descripcion, justificacion, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
 
+  // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
 
+  // Insertar el requerimiento en la base de datos
   const { data, error } = await supabase
     .from('Gastos')
     .insert([{ empleado_id, descripcion, justificacion, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado, token, estado: 'Pendiente' }])
@@ -18,12 +21,14 @@ export const crearRequerimiento = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
+  // Enviar correo al encargado con los detalles del requerimiento
   await sendEmail(
-    'johanmerkahorro777@gmail.com',
+    'johanmerkahorro777@gmail.com', // Correo del encargado
     'Nuevo Requerimiento de Gasto',
     `Descripción: ${descripcion}\nMonto: $${monto_estimado}\nToken: ${token}\n\nDecide aquí:\nhttps://backend-gastos.vercel.app/decidir/${token}`
   );
 
+  // Responder al cliente con el mensaje de éxito
   res.status(201).json({ message: 'Requerimiento creado exitosamente', data });
 };
 
@@ -31,22 +36,45 @@ export const crearRequerimiento = async (req, res) => {
 export const actualizarEstado = async (req, res) => {
   const { token, decision } = req.body;
 
-  const { error } = await supabase
+  // Obtener el correo del solicitante a partir del token
+  const { data, error } = await supabase
+    .from('Gastos')
+    .select('correo_empleado') // Seleccionamos solo el campo correo_empleado
+    .eq('token', token)
+    .single();
+
+  if (error) {
+    console.error('❌ Error al obtener el requerimiento:', error);
+    return res.status(500).json({ error: error.message });
+  }
+
+  // Actualizar el estado del requerimiento en la base de datos
+  const { error: updateError } = await supabase
     .from('Gastos')
     .update({ estado: decision })
     .eq('token', token);
 
-  if (error) {
-    console.error('❌ Error al actualizar estado:', error);
-    return res.status(500).json({ error: error.message });
+  if (updateError) {
+    console.error('❌ Error al actualizar estado:', updateError);
+    return res.status(500).json({ error: updateError.message });
   }
 
+  // Enviar correo al encargado notificando la decisión
   await sendEmail(
-    'gastosmerkahorro@gmail.com',
+    'gastosmerkahorro@gmail.com', // Correo del encargado
     `Requerimiento ${decision}`,
     `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
   );
 
+  // Enviar correo al solicitante notificando la decisión
+  const correoSolicitante = data.correo_empleado;
+  await sendEmail(
+    correoSolicitante, // Correo del solicitante
+    `Tu requerimiento ha sido ${decision}`,
+    `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
+  );
+
+  // Responder al cliente con el mensaje de éxito
   res.status(200).json({ message: `Requerimiento ${decision} correctamente` });
 };
 
@@ -69,6 +97,7 @@ export const obtenerRequerimientos = async (req, res) => {
 export const decidirRequerimiento = async (req, res) => {
   const { token } = req.params;
 
+  // Obtener el requerimiento con el token proporcionado
   const { data, error } = await supabase
     .from('Gastos')
     .select('*')
@@ -80,6 +109,7 @@ export const decidirRequerimiento = async (req, res) => {
     return res.status(404).send('Requerimiento no encontrado');
   }
 
+  // Enviar la página con la decisión (Aprobar/Rechazar)
   res.send(`
     <h1>Decisión sobre el Requerimiento de Gasto</h1>
     <p><strong>Descripción:</strong> ${data.descripcion}</p>
