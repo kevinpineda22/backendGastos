@@ -177,31 +177,108 @@ export const decidirRequerimiento = async (req, res) => {
 
     // Enviar la página con la decisión (Aprobar/Rechazar)
     res.send(`
-      <h1>Decisión sobre el Requerimiento de Gasto</h1>
-      <p><strong>Descripción:</strong> ${data.descripcion}</p>
-      <p><strong>Nombre Completo:</strong> ${data.nombre_completo}</p>
-      <p><strong>Área:</strong> ${data.area}</p>
-      <p><strong>Monto Estimado:</strong> $${data.monto_estimado}</p>
-      <p><strong>Factura (URL o archivo):</strong> <a href="${data.archivo_factura}" target="_blank">Ver Factura</a></p>
-      <p><strong>Cotización (URL o archivo):</strong> <a href="${data.archivo_cotizacion}" target="_blank">Ver Cotización</a></p>
-      <button onclick="decidir('Aprobado')">Aprobar</button>
-      <button onclick="decidir('Rechazado')">Rechazar</button>
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f4f4f9;
+              margin: 0;
+              padding: 20px;
+            }
+            h1 {
+              color: #333;
+              text-align: center;
+              margin-bottom: 20px;
+            }
+            .container {
+              background-color: #fff;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            .info {
+              margin-bottom: 20px;
+            }
+            .info p {
+              font-size: 16px;
+              line-height: 1.6;
+            }
+            .info strong {
+              color: #333;
+            }
+            .button-container {
+              text-align: center;
+              margin-top: 30px;
+            }
+            .button {
+              background-color: #4CAF50;
+              color: white;
+              border: none;
+              padding: 15px 32px;
+              text-align: center;
+              text-decoration: none;
+              display: inline-block;
+              font-size: 16px;
+              border-radius: 5px;
+              cursor: pointer;
+              margin: 10px;
+              transition: background-color 0.3s ease;
+            }
+            .button.reject {
+              background-color: #f44336;
+            }
+            .button:hover {
+              background-color: #45a049;
+            }
+            .button.reject:hover {
+              background-color: #e53935;
+            }
+            a {
+              color: #007bff;
+              text-decoration: none;
+            }
+            a:hover {
+              text-decoration: underline;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Decisión sobre el Requerimiento de Gasto</h1>
+            <div class="info">
+              <p><strong>Descripción:</strong> ${data.descripcion}</p>
+              <p><strong>Nombre Completo:</strong> ${data.nombre_completo}</p>
+              <p><strong>Área:</strong> ${data.area}</p>
+              <p><strong>Monto Estimado:</strong> $${data.monto_estimado}</p>
+              <p><strong>Factura (URL o archivo):</strong> <a href="${data.archivo_factura}" target="_blank">Ver Factura</a></p>
+              <p><strong>Cotización (URL o archivo):</strong> <a href="${data.archivo_cotizacion}" target="_blank">Ver Cotización</a></p>
+            </div>
+            <div class="button-container">
+              <button class="button" onclick="decidir('Aprobado')">Aprobar</button>
+              <button class="button reject" onclick="decidir('Rechazado')">Rechazar</button>
+            </div>
+          </div>
 
-      <script>
-        function decidir(decision) {
-          fetch('https://backend-gastos.vercel.app/api/requerimientos/decidir', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: '${token}', decision })
-          })
-          .then(response => response.json())
-          .then(data => {
-            alert('Decisión tomada: ' + decision);
-            window.location.href = '/';
-          })
-          .catch(error => alert('Error al tomar la decisión: ' + error.message));
-        }
-      </script>
+          <script>
+            function decidir(decision) {
+              fetch('https://backend-gastos.vercel.app/api/requerimientos/decidir', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: '${token}', decision })
+              })
+              .then(response => response.json())
+              .then(data => {
+                alert('Decisión tomada: ' + decision);
+                window.location.href = '/';
+              })
+              .catch(error => alert('Error al tomar la decisión: ' + error.message));
+            }
+          </script>
+        </body>
+      </html>
     `);
   } catch (error) {
     console.error('❌ Error al decidir el requerimiento:', error);
