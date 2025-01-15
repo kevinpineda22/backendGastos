@@ -61,15 +61,15 @@ export const actualizarEstado = async (req, res) => {
 
   // Enviar correo al encargado notificando la decisión
   await sendEmail(
-    correo_empleado, // Correo del encargado
+    'gastosmerkahorro@gmail.com', // Correo del encargado
     `Requerimiento ${decision}`,
     `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
   );
 
   // Enviar correo al solicitante notificando la decisión
-  const correoSolicitante = data.correo_empleado;
+
   await sendEmail(
-    correoSolicitante, // Correo del solicitante
+    correo_empleado, // Correo del solicitante
     `Tu requerimiento ha sido ${decision}`,
     `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
   );
