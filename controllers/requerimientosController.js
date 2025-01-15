@@ -57,7 +57,7 @@ export const actualizarEstado = async (req, res) => {
     // Obtener el correo del solicitante a partir del token
     const { data, error } = await supabase
       .from('Gastos')
-      .select('correo_empleado') // Seleccionamos solo el campo correo_empleado
+      .select('correo_empleado, nombre_completo, descripcion') // Seleccionamos solo lo necesario
       .eq('token', token)
       .single();
 
@@ -77,20 +77,41 @@ export const actualizarEstado = async (req, res) => {
       return res.status(500).json({ error: updateError.message });
     }
 
+    // Mensaje para el correo al encargado
+    const mensajeEncargado = `
+      Se ha tomado una decisión sobre el requerimiento de gasto.
+      Descripción: ${data.descripcion}
+      Nombre: ${data.nombre_completo}
+      Monto Estimado: $${data.monto_estimado}
+      Estado: ${decision}
+    `;
+
     // Enviar correo al encargado notificando la decisión
     await sendEmail(
       'gastosmerkahorro@gmail.com', // Correo del encargado
       `Requerimiento ${decision}`,
-      `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
+      mensajeEncargado
     );
+
+    // Mensaje para el correo al solicitante
+    const mensajeSolicitante = `
+      Estimado ${data.nombre_completo},
+
+      Su requerimiento de gasto con la descripción "${data.descripcion}" ha sido ${decision.toLowerCase()}.
+
+      Si tiene alguna duda, por favor, no dude en ponerse en contacto.
+
+      Saludos cordiales,
+      El equipo de gestión de gastos
+    `;
 
     // Enviar correo al solicitante notificando la decisión
     const correoSolicitante = data.correo_empleado;
     console.log("Enviando correo a:", correoSolicitante);
     await sendEmail(
       correoSolicitante, // Correo del solicitante
-      `Tu requerimiento ha sido ${decision}`,
-      `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
+      `Decisión sobre tu requerimiento de gasto`,
+      mensajeSolicitante
     );
 
     // Responder al cliente con el mensaje de éxito
@@ -100,6 +121,7 @@ export const actualizarEstado = async (req, res) => {
     return res.status(500).json({ error: "Hubo un problema al procesar la actualización del estado." });
   }
 };
+
 
 // ✅ Consultar requerimientos
 export const obtenerRequerimientos = async (req, res) => {
