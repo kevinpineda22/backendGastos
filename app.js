@@ -26,7 +26,7 @@ app.use('/api', requerimientosRoutes);
 app.use('/', requerimientosRoutes);
 
 // Ruta de prueba para verificar que el servidor está funcionando
-app.get('/ping', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).json({ message: 'El servidor está funcionando correctamente.' });
 });
 
