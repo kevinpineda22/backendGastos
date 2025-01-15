@@ -55,67 +55,16 @@ export const crearRequerimiento = async (req, res) => {
       mensajeEncargado
     );
 
-    // Responder al cliente con el mensaje de éxito
-    res.status(201).send(`
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              background-color: #f4f4f9;
-              margin: 0;
-              padding: 20px;
-            }
-            .container {
-              background-color: #ffffff;
-              padding: 20px;
-              border-radius: 8px;
-              max-width: 600px;
-              margin: 0 auto;
-              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            }
-            h1 {
-              text-align: center;
-              color: #89DC00;
-            }
-            p {
-              font-size: 16px;
-              color: #555;
-              line-height: 1.5;
-            }
-            .btn {
-              display: block;
-              width: 100%;
-              background-color: #89DC00;
-              color: white;
-              padding: 15px;
-              text-align: center;
-              border-radius: 5px;
-              text-decoration: none;
-              font-size: 16px;
-              margin-top: 20px;
-            }
-            .btn:hover {
-              background-color: #89DC00;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Solicitud Enviada Exitosamente</h1>
-            <p>Tu solicitud de gasto ha sido recibida con éxito. Nuestro equipo está revisando los detalles.</p>
-            <p>En breve recibirás una notificación sobre la decisión tomada respecto a tu solicitud.</p>
-            <a href="/" class="btn">Regresar al Inicio</a>
-          </div>
-        </body>
-      </html>
-    `);
+    // Responder al cliente con un objeto JSON con el mensaje de éxito
+    return res.status(201).json({
+      message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
+      redirectTo: '/' // O puedes redirigir a una página específica
+    });
   } catch (error) {
     console.error("❌ Error en la creación del requerimiento:", error);
     return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
   }
 };
-
 
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
@@ -125,7 +74,7 @@ export const actualizarEstado = async (req, res) => {
     // Obtener el correo del solicitante a partir del token
     const { data, error } = await supabase
       .from('Gastos')
-      .select('correo_empleado, nombre_completo, descripcion') // Seleccionamos solo lo necesario
+      .select('correo_empleado, nombre_completo, descripcion, monto_estimado') // Seleccionamos solo lo necesario
       .eq('token', token)
       .single();
 
@@ -190,7 +139,6 @@ export const actualizarEstado = async (req, res) => {
   }
 };
 
-
 // ✅ Consultar requerimientos
 export const obtenerRequerimientos = async (req, res) => {
   try {
@@ -211,7 +159,7 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
-// ✅ Página para aprobar o rechazar requerimiento
+// ✅ Página para aprobar o rechazar requerimiento (Este es el endpoint que se llama desde el correo)
 export const decidirRequerimiento = async (req, res) => {
   const { token } = req.params;
 
@@ -281,13 +229,13 @@ export const decidirRequerimiento = async (req, res) => {
               transition: background-color 0.3s ease;
             }
             .button.reject {
-              background-color:rgb(235, 6, 6);
+              background-color: rgb(235, 6, 6);
             }
             .button:hover {
               background-color: #89DC00;
             }
             .button.reject:hover {
-              background-color:rgb(235, 6, 6);
+              background-color: rgb(235, 6, 6);
             }
             a {
               color: #210d65;
