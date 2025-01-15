@@ -1,0 +1,21 @@
+{
+  "name": "backendgastos",
+  "version": "1.0.0",
+  "description": "Backend para gestionar requerimientos de gastos",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Tu Nombre",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.14",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nodemailer": "^6.9.16"
+  }
+}
