@@ -43,10 +43,10 @@ export const actualizarEstado = async (req, res) => {
   }
 
   await sendEmail(
-    'gastosmerkahorro@gmail.com',
-    `Requerimiento ${decision}`,
-    `Tu requerimiento con token ${token} ha sido ${decision.toLowerCase()}.`
-  );
+    'johanmerkahorro777@gmail.com',
+    'Nuevo Requerimiento de Gasto',
+    `Descripción: ${descripcion}\nMonto: $${monto_estimado}\nToken: ${token}\n\nDecide aquí:\nhttps://backend-gastos.vercel.app/decidir/${token}`
+  );  
 
   res.status(200).json({ message: `Requerimiento ${decision} correctamente` });
 };
@@ -90,18 +90,18 @@ export const decidirRequerimiento = async (req, res) => {
     <button onclick="decidir('Rechazado')">Rechazar</button>
     <script>
       function decidir(decision) {
-        fetch('http://localhost:6666/api/requerimiento/decidir', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: '${token}', decision })
-        })
-        .then(response => response.json())
-        .then(data => {
-          alert('Decisión tomada: ' + decision);
-          window.location.href = '/';
-        })
-        .catch(error => alert('Error al tomar la decisión'));
-      }
+  fetch('https://backend-gastos.vercel.app/api/requerimiento/decidir', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: '${token}', decision })
+  })
+  .then(response => response.json())
+  .then(data => {
+    alert('Decisión tomada: ' + decision);
+    window.location.href = '/';
+  })
+  .catch(error => alert('Error al tomar la decisión'));
+}
     </script>
   `);
 };
