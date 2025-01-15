@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { empleado_id, descripcion, nombre_completo, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
+  const { descripcion, nombre_completo, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -17,7 +17,7 @@ export const crearRequerimiento = async (req, res) => {
     const { data, error } = await supabase
       .from('Gastos')
       .insert([{ 
-        empleado_id, 
+  
         descripcion, 
         nombre_completo, 
         monto_estimado, 
