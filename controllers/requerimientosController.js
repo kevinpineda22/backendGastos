@@ -1,4 +1,3 @@
-// 📂 controllers/requerimientosController.js
 import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
@@ -90,7 +89,7 @@ export const decidirRequerimiento = async (req, res) => {
     <button onclick="decidir('Rechazado')">Rechazar</button>
     <script>
       function decidir(decision) {
-        fetch('https://backend-gastos.vercel.app/api/requerimiento/decidir', {
+        fetch('https://backend-gastos.vercel.app/api/requerimientos/decidir', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: '${token}', decision })
@@ -100,7 +99,7 @@ export const decidirRequerimiento = async (req, res) => {
           alert('Decisión tomada: ' + decision);
           window.location.href = '/';
         })
-        .catch(error => alert('Error al tomar la decisión'));
+        .catch(error => alert('Error al tomar la decisión: ' + error.message));
       }
     </script>
   `);
