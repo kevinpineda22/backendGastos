@@ -1,4 +1,3 @@
-// 📂 app.js
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -10,15 +9,15 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 6666;
 
-// Middlewares
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rutas
+// Rutas API
 app.use('/api', requerimientosRoutes);
-app.use('/', requerimientosRoutes); // ✅ Habilita acceso a /decidir/:token
 
-// Iniciar servidor
+// Ruta directa para decidir
+app.use('/', requerimientosRoutes);
+
 app.listen(port, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${port}`);
 });
