@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { descripcion, nombre_completo, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
+  const { nombre_completo, area, descripcion, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -17,9 +17,9 @@ export const crearRequerimiento = async (req, res) => {
     const { data, error } = await supabase
       .from('Gastos')
       .insert([{ 
-  
-        descripcion, 
         nombre_completo, 
+        area,
+        descripcion, 
         monto_estimado, 
         archivo_factura, 
         archivo_cotizacion, 
@@ -35,10 +35,24 @@ export const crearRequerimiento = async (req, res) => {
     }
 
     // Enviar correo al encargado con los detalles del requerimiento
+    const mensajeEncargado = `
+      Se ha creado un nuevo requerimiento de gasto. A continuación, se muestran los detalles del requerimiento:
+
+      Nombre Completo: ${nombre_completo}
+      Área: ${area}
+      Descripción: ${descripcion}
+      Monto Estimado: $${monto_estimado}
+      Factura: ${archivo_factura}
+      Cotización: ${archivo_cotizacion}
+
+      Decida si aprobar o rechazar el requerimiento a través del siguiente enlace:
+      https://backend-gastos.vercel.app/decidir/${token}
+    `;
+
     await sendEmail(
       'johanmerkahorro777@gmail.com', // Correo del encargado
       'Nuevo Requerimiento de Gasto',
-      `Descripción: ${descripcion}\nMonto: $${monto_estimado}\nToken: ${token}\n\nDecide aquí:\nhttps://backend-gastos.vercel.app/decidir/${token}`
+      mensajeEncargado
     );
 
     // Responder al cliente con el mensaje de éxito
@@ -48,6 +62,7 @@ export const crearRequerimiento = async (req, res) => {
     return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
   }
 };
+
 
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
@@ -164,10 +179,14 @@ export const decidirRequerimiento = async (req, res) => {
     res.send(`
       <h1>Decisión sobre el Requerimiento de Gasto</h1>
       <p><strong>Descripción:</strong> ${data.descripcion}</p>
-      <p><strong>Nombre completo:</strong> ${data.nombre_completo}</p>
+      <p><strong>Nombre Completo:</strong> ${data.nombre_completo}</p>
+      <p><strong>Área:</strong> ${data.area}</p>
       <p><strong>Monto Estimado:</strong> $${data.monto_estimado}</p>
+      <p><strong>Factura (URL o archivo):</strong> <a href="${data.archivo_factura}" target="_blank">Ver Factura</a></p>
+      <p><strong>Cotización (URL o archivo):</strong> <a href="${data.archivo_cotizacion}" target="_blank">Ver Cotización</a></p>
       <button onclick="decidir('Aprobado')">Aprobar</button>
       <button onclick="decidir('Rechazado')">Rechazar</button>
+
       <script>
         function decidir(decision) {
           fetch('https://backend-gastos.vercel.app/api/requerimientos/decidir', {
