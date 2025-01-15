@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { empleado_id, descripcion, justificacion, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
+  const { empleado_id, descripcion, nombre_completo, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -19,7 +19,7 @@ export const crearRequerimiento = async (req, res) => {
       .insert([{ 
         empleado_id, 
         descripcion, 
-        justificacion, 
+        nombre_completo, 
         monto_estimado, 
         archivo_factura, 
         archivo_cotizacion, 
@@ -142,7 +142,7 @@ export const decidirRequerimiento = async (req, res) => {
     res.send(`
       <h1>Decisión sobre el Requerimiento de Gasto</h1>
       <p><strong>Descripción:</strong> ${data.descripcion}</p>
-      <p><strong>Justificación:</strong> ${data.justificacion}</p>
+      <p><strong>Nombre completo:</strong> ${data.nombre_completo}</p>
       <p><strong>Monto Estimado:</strong> $${data.monto_estimado}</p>
       <button onclick="decidir('Aprobado')">Aprobar</button>
       <button onclick="decidir('Rechazado')">Rechazar</button>
