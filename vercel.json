@@ -2,26 +2,30 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",  
+      "src": "app.js", 
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/ping",
+      "dest": "/app.js"
+    },
+    {
       "src": "/api/requerimiento",
-      "dest": "/server.js"
+      "dest": "/app.js"
     },
     {
       "src": "/api/requerimiento/decidir",
-      "dest": "/server.js"
+      "dest": "/app.js"
     },
     {
       "src": "/api/requerimientos",
-      "dest": "/server.js"
+      "dest": "/app.js"
     },
     {
       "src": "/api/decidir/(.*)",
-      "dest": "/server.js"
+      "dest": "/app.js"
     }
   ]
 }
