@@ -281,7 +281,7 @@ export const decidirRequerimiento = async (req, res) => {
               .then(response => response.json())
               .then(data => {
                 alert('Decisión tomada: ' + decision);
-                window.location.href = '/';
+                window.location.href = 'https://www.merkahorro.com/';
               })
               .catch(error => alert('Error al tomar la decisión: ' + error.message));
             }
