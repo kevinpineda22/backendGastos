@@ -153,7 +153,7 @@ export const actualizarEstado = async (req, res) => {
       <body>
         <div class="container">
           <div class="header">
-            <img src="http://localhost:5173/logoMK.png" alt="Logo de la Empresa" />
+            <img src="https://www.merkahorro.com/logoMK.png" alt="Logo de la Empresa" />
           </div>
           <h1>Nuevo Requerimiento de Gasto</h1>
           <div class="content">
@@ -242,7 +242,7 @@ export const actualizarEstado = async (req, res) => {
       <body>
         <div class="container">
           <div class="header">
-            <img src="http://localhost:5173/logoMK.png" alt="Logo de la Empresa" />
+            <img src="https://www.merkahorro.com/logoMK.png" alt="Logo de la Empresa" />
           </div>
           <h1>Decisión sobre tu Requerimiento de Gasto</h1>
           <div class="content">
@@ -259,6 +259,8 @@ export const actualizarEstado = async (req, res) => {
     </html>
   `;
   
+const correoSolicitante = data.correo_empleado; // Asegúrate de tener el correo correcto
+
   await sendEmail(
     correoSolicitante, // Correo del solicitante
     `Decisión sobre tu requerimiento de gasto`,

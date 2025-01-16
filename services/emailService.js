@@ -11,13 +11,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = async (to, subject, text) => {
+export const sendEmail = async (to, subject, html) => {  // Cambiar text a html
   try {
     await transporter.sendMail({
       from: `"Merkahorro" <${process.env.EMAIL_USER}>`,
       to,
       subject,
-      text,
+      html, // Usamos 'html' para el contenido HTML
     });
     console.log(`📨 Correo enviado a ${to}`);
   } catch (error) {
