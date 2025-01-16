@@ -37,30 +37,55 @@ export const crearRequerimiento = async (req, res) => {
      
     // Correo para el encargado con diseño y CSS
     const mensajeEncargado = `
-    <html>
-      <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px;">
-        <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
-          <div style="text-align: center;">
-            <img src="https://www.merkahorro.com/logoMK.png" alt="Logo de la Empresa" style="width: 150px; margin-bottom: 20px;" />
-          </div>
-          <h1 style="color: #210d65;">Nuevo Requerimiento de Gasto</h1>
-          <div style="color: #555; line-height: 1.6;">
-            <p><strong>Nombre Completo:</strong> ${nombre_completo}</p>
-            <p><strong>Área:</strong> ${area}</p>
-            <p><strong>Descripción:</strong> ${descripcion}</p>
-            <p><strong>Monto Estimado:</strong> $${monto_estimado}</p>
-            <p><strong>Factura:</strong> ${archivo_factura}</p>
-            <p><strong>Cotización:</strong> ${archivo_cotizacion}</p>
-            <p>Decida si aprobar o rechazar el requerimiento a través del siguiente enlace:</p>
-            <p><a href="https://backend-gastos.vercel.app/decidir/${token}" style="color: #89DC00; text-decoration: underline; font-weight: bold;">Aprobar/Rechazar</a></p>
-          </div>
-          <div style="margin-top: 30px; text-align: center; color: #777;">
-            <p>Saludos cordiales,<br>El equipo de gestión de gastos</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  <html>
+    <body style="margin: 0; padding: 0; background-color: #f4f4f9;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f9; padding: 20px 0;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; padding: 30px; border: 1px solid #e0e0e0;">
+              <tr>
+                <td align="center" style="padding-bottom: 20px;">
+                  <img src="https://www.merkahorro.com/logoMK.png" alt="Logo de la Empresa" width="150" style="display: block;">
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial, sans-serif; color: #210d65; font-size: 22px; text-align: center; padding-bottom: 10px;">
+                  <strong>Nuevo Requerimiento de Gasto</strong>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial, sans-serif; color: #555555; font-size: 16px; line-height: 1.6; padding-bottom: 20px;">
+                  <p><strong>Nombre Completo:</strong> ${nombre_completo}</p>
+                  <p><strong>Área:</strong> ${area}</p>
+                  <p><strong>Descripción:</strong> ${descripcion}</p>
+                  <p><strong>Monto Estimado:</strong> $${monto_estimado}</p>
+                  <p><strong>Factura:</strong> <a href="${archivo_factura}" target="_blank" style="color: #210d65; text-decoration: underline;">Ver Factura</a></p>
+                  <p><strong>Cotización:</strong> <a href="${archivo_cotizacion}" target="_blank" style="color: #210d65; text-decoration: underline;">Ver Cotización</a></p>
+                  <p>Decida si aprobar o rechazar el requerimiento a través del siguiente enlace:</p>
+                  <p style="text-align: center; margin: 20px 0;">
+                    <a href="https://backend-gastos.vercel.app/decidir/${token}" style="background-color: #89DC00; color: #ffffff; text-decoration: none; padding: 12px 25px; font-size: 16px; border-radius: 5px; display: inline-block;">
+                      Aprobar/Rechazar
+                    </a>
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial, sans-serif; color: #777777; font-size: 14px; text-align: center; padding-top: 20px;">
+                  Saludos cordiales,<br>El equipo de gestión de gastos
+                </td>
+              </tr>
+              <tr>
+                <td align="center" style="font-family: Arial, sans-serif; color: #999999; font-size: 12px; padding-top: 20px;">
+                  &copy; 2025 Merkahorro | Todos los derechos reservados
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
+`;
 
   await sendEmail(
     'johanmerkahorro777@gmail.com', // Correo del encargado
@@ -109,26 +134,46 @@ try {
 
   // Correo para el solicitante (con diseño y CSS)
   const mensajeSolicitante = `
-    <html>
-      <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px;">
-        <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
-          <div style="text-align: center;">
-            <img src="https://www.merkahorro.com/logoMK.png" alt="Logo de la Empresa" style="width: 150px; margin-bottom: 20px;" />
-          </div>
-          <h1 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h1>
-          <div style="color: #555; line-height: 1.6;">
-            <p>Estimado ${data.nombre_completo},</p>
-            <p>Tu requerimiento de gasto con la descripción "${data.descripcion}" ha sido ${decision.toLowerCase()}.</p>
-            <p>Si tienes alguna duda, por favor, no dudes en ponerte en contacto.</p>
-            <p>Saludos cordiales,<br>El equipo de gestión de gastos</p>
-          </div>
-          <div style="margin-top: 30px; text-align: center; color: #777;">
-            <p>&copy; 2025 Tu Empresa | Todos los derechos reservados</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  <html>
+    <body style="margin: 0; padding: 0; background-color: #f4f4f9;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f9; padding: 20px 0;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; padding: 30px; border: 1px solid #e0e0e0;">
+              <tr>
+                <td align="center" style="padding-bottom: 20px;">
+                  <img src="https://www.merkahorro.com/logoMK.png" alt="Logo de la Empresa" width="150" style="display: block;">
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial, sans-serif; color: #210d65; font-size: 22px; text-align: center; padding-bottom: 10px;">
+                  <strong>Decisión sobre tu Requerimiento de Gasto</strong>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial, sans-serif; color: #555555; font-size: 16px; line-height: 1.6; padding-bottom: 20px;">
+                  <p>Estimado ${data.nombre_completo},</p>
+                  <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
+                  <p>Si tienes alguna duda, por favor, contáctanos.</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial, sans-serif; color: #777777; font-size: 14px; text-align: center; padding-top: 20px;">
+                  Saludos cordiales,<br>El equipo de gestión de gastos
+                </td>
+              </tr>
+              <tr>
+                <td align="center" style="font-family: Arial, sans-serif; color: #999999; font-size: 12px; padding-top: 20px;">
+                  &copy; 2025 Merkahorro | Todos los derechos reservados
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
+`;
 
   const correoSolicitante = data.correo_empleado;
 
