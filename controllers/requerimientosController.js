@@ -2,38 +2,34 @@ import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
 
-// ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
   const { nombre_completo, area, descripcion, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
-
-  // Verifica que el correo del solicitante se reciba correctamente
-  console.log("Correo del solicitante recibido:", correo_empleado);
 
   // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
 
   try {
-    // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
-      .insert([{ 
-        nombre_completo, 
-        area,
-        descripcion, 
-        monto_estimado, 
-        archivo_factura, 
-        archivo_cotizacion, 
-        correo_empleado, 
-        token, 
-        estado: 'Pendiente' 
-      }])
+      .insert([
+        {
+          nombre_completo,
+          area,
+          descripcion,
+          monto_estimado,
+          archivo_factura,
+          archivo_cotizacion,
+          correo_empleado,
+          token,
+          estado: 'Pendiente',
+        },
+      ])
       .select();
 
     if (error) {
       console.error('❌ Error al insertar en Supabase:', error);
       return res.status(500).json({ error: error.message });
     }
-
      
     // Correo para el encargado con diseño y CSS
     const mensajeEncargado = `
@@ -88,7 +84,7 @@ export const crearRequerimiento = async (req, res) => {
 `;
 
   await sendEmail(
-    'johanmerkahorro777@gmail.com@', // Correo del encargado
+    'johanmerkahorro777@gmail.com', // Correo del encargado
     'Nuevo Requerimiento de Gasto',
     mensajeEncargado
   );
@@ -106,31 +102,38 @@ export const crearRequerimiento = async (req, res) => {
 
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
-const { token, decision } = req.body;
+  const { token, decision } = req.body;
 
-try {
-  // Obtener el correo del solicitante a partir del token
-  const { data, error } = await supabase
-    .from('Gastos')
-    .select('correo_empleado, nombre_completo, descripcion, monto_estimado') // Seleccionamos solo lo necesario
-    .eq('token', token)
-    .single();
+  try {
+    // Obtener el requerimiento basado en el token
+    const { data, error } = await supabase
+      .from('Gastos')
+      .select('correo_empleado, nombre_completo, descripcion, monto_estimado, estado') // Incluye el estado actual
+      .eq('token', token)
+      .single();
 
-  if (error) {
-    console.error('❌ Error al obtener el requerimiento:', error);
-    return res.status(500).json({ error: error.message });
-  }
+    if (error || !data) {
+      console.error('❌ Error al obtener el requerimiento:', error);
+      return res.status(404).json({ error: 'Requerimiento no encontrado.' });
+    }
 
-  // Actualizar el estado del requerimiento en la base de datos
-  const { error: updateError } = await supabase
-    .from('Gastos')
-    .update({ estado: decision })
-    .eq('token', token);
+    // Verificar si ya tiene el estado que se intenta establecer
+    if (data.estado === decision) {
+      return res.status(400).json({
+        message: `El requerimiento ya se encuentra en estado "${decision}".`,
+      });
+    }
 
-  if (updateError) {
-    console.error('❌ Error al actualizar estado:', updateError);
-    return res.status(500).json({ error: updateError.message });
-  }
+    // Actualizar el estado del requerimiento en la base de datos
+    const { error: updateError } = await supabase
+      .from('Gastos')
+      .update({ estado: decision })
+      .eq('token', token);
+
+    if (updateError) {
+      console.error('❌ Error al actualizar estado:', updateError);
+      return res.status(500).json({ error: updateError.message });
+    }
 
   // Correo para el solicitante (con diseño y CSS)
   const mensajeSolicitante = `
@@ -175,22 +178,24 @@ try {
   </html>
 `;
 
-  const correoSolicitante = data.correo_empleado;
+const correoSolicitante = data.correo_empleado;
 
-  await sendEmail(
-    correoSolicitante, // Correo del solicitante
-    'Decisión sobre tu requerimiento de gasto',
-    mensajeSolicitante
-  );
+await sendEmail(
+  correoSolicitante, // Correo del solicitante
+  'Decisión sobre tu requerimiento de gasto',
+  mensajeSolicitante
+);
 
-  // Responder al cliente con el mensaje de éxito
-  return res.status(200).json({ message: `Requerimiento ${decision} correctamente` });
+return res.status(200).json({
+  message: `Requerimiento ${decision} correctamente.`,
+});
 } catch (error) {
-  console.error("❌ Error en la actualización del estado:", error);
-  return res.status(500).json({ error: "Hubo un problema al procesar la actualización del estado." });
+console.error('❌ Error en la actualización del estado:', error);
+return res.status(500).json({
+  error: 'Hubo un problema al procesar la actualización del estado.',
+});
 }
 };
-
 
 // ✅ Consultar requerimientos
 export const obtenerRequerimientos = async (req, res) => {
