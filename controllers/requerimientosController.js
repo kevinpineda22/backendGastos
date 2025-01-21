@@ -101,7 +101,7 @@ export const crearRequerimiento = async (req, res) => {
     console.error("❌ Error en la creación del requerimiento:", error);
     return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
   }
-}
+};
 
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
