@@ -84,7 +84,7 @@ export const crearRequerimiento = async (req, res) => {
 `;
 
   await sendEmail(
-    'operaciones@merkahorrosas.com', // Correo del encargado
+    'desarrollo@merkahorrosas.com', // Correo del encargado
     'Nuevo Requerimiento de Gasto',
     mensajeEncargado
   );
