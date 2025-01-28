@@ -309,26 +309,10 @@ export const decidirRequerimiento = async (req, res) => {
               <p><strong>Cotización (URL o archivo):</strong> <a href="${data.archivo_cotizacion}" target="_blank">Ver Cotización</a></p>
             </div>
             <div class="button-container">
-              <button class="button" onclick="decidir('Aprobado')">Aprobar</button>
-              <button class="button reject" onclick="decidir('Rechazado')">Rechazar</button>
+              <a href="https://backend-gastos.vercel.app/api/requerimientos/decidir/${token}/Aprobado" class="button">Aprobar</a>
+              <a href="https://backend-gastos.vercel.app/api/requerimientos/decidir/${token}/Rechazado" class="button reject">Rechazar</a>
             </div>
           </div>
-
-          <script>
-            function decidir(decision) {
-              fetch('https://backend-gastos.vercel.app/api/requerimientos/decidir', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: '${token}', decision })
-              })
-              .then(response => response.json())
-              .then(data => {
-                alert('Decisión tomada: ' + decision);
-                window.location.href = 'https://www.merkahorro.com/';
-              })
-              .catch(error => alert('Error al tomar la decisión: ' + error.message));
-            }
-          </script>
         </body>
       </html>
     `);
