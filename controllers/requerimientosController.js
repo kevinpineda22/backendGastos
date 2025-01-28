@@ -63,7 +63,7 @@ export const crearRequerimiento = async (req, res) => {
       color: #333333;
     }
     .button {
-      background-color: #3498db;
+      background-color: #210d65;
       color: white;
       padding: 10px 20px;
       text-decoration: none;
@@ -77,7 +77,7 @@ export const crearRequerimiento = async (req, res) => {
       <td align="center">
         <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
           <tr>
-            <td style="text-align: center; background-color: #3498db; color: white;">
+            <td style="text-align: center; background-color: #210d65; color: white;">
               <h2>Nuevo Requerimiento de Gasto</h2>
             </td>
           </tr>
