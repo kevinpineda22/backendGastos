@@ -120,7 +120,7 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-              <a href="http://localhost:5174/AprobarRechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
+              <a href="https://tu-frontend.com/AprobarRechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
               <p style="margin-top: 30px;">Saludos cordiales,<br>El equipo de gestión de gastos<br>Merkahorro</p>
             </td>
           </tr>
@@ -253,6 +253,27 @@ export const decidirRequerimiento = async (req, res) => {
       console.error('❌ Error al actualizar estado:', updateError);
       return res.status(500).json({ error: updateError.message });
     }
+
+    // Correo para el solicitante (texto plano)
+    const mensajeSolicitante = `
+Estimado ${data.nombre_completo},
+
+Tu requerimiento de gasto con la descripción "${data.descripcion}" ha sido ${decision.toLowerCase()}.
+
+Si tienes alguna duda, por favor, contáctanos.
+
+Saludos cordiales,
+El equipo de gestión de gastos
+Merkahorro
+`;
+
+    const correoSolicitante = data.correo_empleado;
+
+    await sendEmail(
+      correoSolicitante, // Correo del solicitante
+      'Decisión sobre tu requerimiento de gasto',
+      mensajeSolicitante
+    );
 
     // Responder al cliente con el mensaje de éxito
     return res.status(200).json({ message: `Requerimiento ${decision} correctamente` });
