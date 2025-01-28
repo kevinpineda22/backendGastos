@@ -38,24 +38,98 @@ export const crearRequerimiento = async (req, res) => {
 
     // Correo para el encargado en texto plano
     const mensajeEncargado = `
-Nuevo Requerimiento de Gasto
-
-Nombre Completo: ${nombre_completo}
-Área: ${area}
-Descripción: ${descripcion}
-Procesos: ${procesos}
-Centro de Operaciones:${sede}
-Unidad de Negocio:${unidad}
-Monto Estimado: $${monto_estimado}
-
-Cotización: ${archivo_cotizacion}
-
-Decida si aprobar o rechazar el requerimiento a través del siguiente enlace:
-http://localhost:5173/AprobarRechazar?token=${encodeURIComponent(token)}
-
-Saludos cordiales,
-El equipo de gestión de gastos
-Merkahorro
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-spacing: 0;
+      background-color: #ffffff;
+    }
+    td {
+      padding: 15px;
+    }
+    h2 {
+      font-size: 24px;
+      color: #333333;
+    }
+    .button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
+          <tr>
+            <td style="text-align: center; background-color: #3498db; color: white;">
+              <h2>Nuevo Requerimiento de Gasto</h2>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>Estimado encargado,</p>
+              <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
+              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
+                <tr>
+                  <td style="font-weight: bold;">Nombre Completo:</td>
+                  <td>${nombre_completo}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Área:</td>
+                  <td>${area}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Descripción:</td>
+                  <td>${descripcion}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Procesos:</td>
+                  <td>${procesos}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Centro de Operaciones:</td>
+                  <td>${sede}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Unidad de Negocio:</td>
+                  <td>${unidad}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Monto Estimado:</td>
+                  <td>$${monto_estimado}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Cotización:</td>
+                  <td><a href="${archivo_cotizacion}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
+                </tr>
+              </table>
+              <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
+              <a href="http://localhost:5173/AprobarRechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
+              <p style="margin-top: 30px;">Saludos cordiales,<br>El equipo de gestión de gastos<br>Merkahorro</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 `;
 
     await sendEmail(
