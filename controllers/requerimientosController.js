@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { nombre_completo, area, descripcion, monto_estimado, archivo_factura, archivo_cotizacion, correo_empleado } = req.body;
+  const { nombre_completo, area,procesos,sede, descripcion, monto_estimado, archivo_cotizacion, correo_empleado } = req.body;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -19,9 +19,10 @@ export const crearRequerimiento = async (req, res) => {
       .insert([{ 
         nombre_completo, 
         area,
+        procesos,
+        sede,
         descripcion, 
         monto_estimado, 
-        archivo_factura, 
         archivo_cotizacion, 
         correo_empleado, 
         token, 
@@ -41,8 +42,10 @@ Nuevo Requerimiento de Gasto
 Nombre Completo: ${nombre_completo}
 Área: ${area}
 Descripción: ${descripcion}
+Procesos: ${procesos}
+Centro de Operaciones:${sede}
 Monto Estimado: $${monto_estimado}
-Factura: ${archivo_factura}
+
 Cotización: ${archivo_cotizacion}
 
 Decida si aprobar o rechazar el requerimiento a través del siguiente enlace:
