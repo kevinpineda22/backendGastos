@@ -4,8 +4,8 @@ import { crearRequerimiento, actualizarEstado, obtenerRequerimientos, decidirReq
 const router = express.Router();
 
 router.post('/requerimientos', crearRequerimiento);
-router.patch('/requerimientos/decidir', actualizarEstado);
+router.patch('/requerimientos/estado', actualizarEstado);
 router.get('/requerimientos', obtenerRequerimientos);
-router.get('/decidir/:token', decidirRequerimiento);
+router.post('/requerimientos/decidir', decidirRequerimiento);
 
 export default router;

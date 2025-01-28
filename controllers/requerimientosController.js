@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { nombre_completo, area,procesos,sede,unidad, descripcion, monto_estimado, archivo_cotizacion, correo_empleado } = req.body;
+  const { nombre_completo, area, procesos, sede, unidad, descripcion, monto_estimado, archivo_cotizacion, correo_empleado } = req.body;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -120,7 +120,7 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-              <a href="http://localhost:5173/AprobarRechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
+              <a href="https://tu-frontend.com/AprobarRechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
               <p style="margin-top: 30px;">Saludos cordiales,<br>El equipo de gestión de gastos<br>Merkahorro</p>
             </td>
           </tr>
