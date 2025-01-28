@@ -212,7 +212,7 @@ export const obtenerRequerimientos = async (req, res) => {
 
 // ✅ Página para aprobar o rechazar requerimiento (Este es el endpoint que se llama desde el correo)
 export const decidirRequerimiento = async (req, res) => {
-  const { token } = req.params;
+  const { token, decision } = req.body;
 
   try {
     // Obtener el requerimiento con el token proporcionado
@@ -224,100 +224,45 @@ export const decidirRequerimiento = async (req, res) => {
 
     if (error || !data) {
       console.error('❌ Error al obtener el requerimiento:', error);
-      return res.status(404).send('Requerimiento no encontrado');
+      return res.status(404).json({ error: 'Requerimiento no encontrado' });
     }
 
-    // Enviar la página con la decisión (Aprobar/Rechazar)
-    res.send(`
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              background-color: #f4f4f9;
-              margin: 0;
-              padding: 20px;
-            }
-            h1 {
-              color: #333;
-              text-align: center;
-              margin-bottom: 20px;
-            }
-            .container {
-              background-color: #fff;
-              padding: 20px;
-              border-radius: 8px;
-              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-              max-width: 800px;
-              margin: 0 auto;
-            }
-            .info {
-              margin-bottom: 20px;
-            }
-            .info p {
-              font-size: 16px;
-              line-height: 1.6;
-            }
-            .info strong {
-              color: #333;
-            }
-            .button-container {
-              text-align: center;
-              margin-top: 30px;
-            }
-            .button {
-              background-color: #89DC00;
-              color: white;
-              border: none;
-              padding: 15px 32px;
-              text-align: center;
-              text-decoration: none;
-              display: inline-block;
-              font-size: 16px;
-              border-radius: 5px;
-              cursor: pointer;
-              margin: 10px;
-              transition: background-color 0.3s ease;
-            }
-            .button.reject {
-              background-color: rgb(235, 6, 6);
-            }
-            .button:hover {
-              background-color: #89DC00;
-            }
-            .button.reject:hover {
-              background-color: rgb(235, 6, 6);
-            }
-            a {
-              color: #210d65;
-              text-decoration: none;
-            }
-            a:hover {
-              text-decoration: underline;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Decisión sobre el Requerimiento de Gasto</h1>
-            <div class="info">
-              <p><strong>Descripción:</strong> ${data.descripcion}</p>
-              <p><strong>Nombre Completo:</strong> ${data.nombre_completo}</p>
-              <p><strong>Área:</strong> ${data.area}</p>
-              <p><strong>Monto Estimado:</strong> $${data.monto_estimado}</p>
-              <p><strong>Factura (URL o archivo):</strong> <a href="${data.archivo_factura}" target="_blank">Ver Factura</a></p>
-              <p><strong>Cotización (URL o archivo):</strong> <a href="${data.archivo_cotizacion}" target="_blank">Ver Cotización</a></p>
-            </div>
-            <div class="button-container">
-              <a href="https://backend-gastos.vercel.app/api/requerimientos/decidir/${token}/Aprobado" class="button">Aprobar</a>
-              <a href="https://backend-gastos.vercel.app/api/requerimientos/decidir/${token}/Rechazado" class="button reject">Rechazar</a>
-            </div>
-          </div>
-        </body>
-      </html>
-    `);
+    // Actualizar el estado del requerimiento en la base de datos
+    const { error: updateError } = await supabase
+      .from('Gastos')
+      .update({ estado: decision })
+      .eq('token', token);
+
+    if (updateError) {
+      console.error('❌ Error al actualizar estado:', updateError);
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    // Correo para el solicitante (texto plano)
+    const mensajeSolicitante = `
+Estimado ${data.nombre_completo},
+
+Tu requerimiento de gasto con la descripción "${data.descripcion}" ha sido ${decision.toLowerCase()}.
+
+Si tienes alguna duda, por favor, contáctanos.
+
+Saludos cordiales,
+El equipo de gestión de gastos
+Merkahorro
+`;
+
+    const correoSolicitante = data.correo_empleado;
+
+    await sendEmail(
+      correoSolicitante, // Correo del solicitante
+      'Decisión sobre tu requerimiento de gasto',
+      mensajeSolicitante
+    );
+
+    // Responder al cliente con el mensaje de éxito
+    return res.status(200).json({ message: `Requerimiento ${decision} correctamente` });
   } catch (error) {
-    console.error('❌ Error al decidir el requerimiento:', error);
-    res.status(500).send('Hubo un error al cargar la página de decisión');
+    console.error('❌ Error en la actualización del estado:', error);
+    return res.status(500).json({ error: 'Hubo un problema al procesar la actualización del estado.' });
   }
 };
