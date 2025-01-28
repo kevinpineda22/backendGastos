@@ -9,6 +9,11 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  secure: true, // Usa SSL
+  port: 465, // Puerto para SSL
+  tls: {
+    rejectUnauthorized: false, // Permite certificados no autorizados (útil para pruebas)
+  },
 });
 
 export const sendEmail = async (to, subject, htmlContent) => {
