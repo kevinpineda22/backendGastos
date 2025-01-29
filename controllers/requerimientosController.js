@@ -42,8 +42,6 @@ export const crearRequerimiento = async (req, res) => {
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
 
-    // Limpiar el valor de monto_estimado
-    const montoEstimadoLimpio = parseFloat(monto_estimado.replace(/[^0-9.-]+/g, ''));
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
@@ -56,7 +54,7 @@ export const crearRequerimiento = async (req, res) => {
         unidad: unidadPgArray, // Formatear como array PostgreSQL
         centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
         descripcion, 
-        monto_estimado: montoEstimadoLimpio, // Usar el valor limpio
+        monto_estimado,
         archivo_cotizacion: archivoCotizacionUrl, 
         correo_empleado, 
         token, 
