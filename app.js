@@ -1,23 +1,21 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import cors from 'cors';  // Asegúrate de que cors esté importado
+import cors from 'cors';
 import dotenv from 'dotenv';
 import requerimientosRoutes from './routes/requerimientosRoutes.js';
 import multer from 'multer';
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-app.use(upload.single('archivo_cotizacion'));
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: '*' })); // Esto permite cualquier dominio
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+app.use(cors({ origin: '*' }));
 
 // Configuración de CORS para permitir solicitudes desde cualquier dominio
-app.use((req, res, next) => { 
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');  // Permite solicitudes de cualquier origen
   res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH');  // Permite métodos específicos
   res.header('Access-Control-Allow-Headers', 'Content-Type');  // Permite encabezados específicos
@@ -26,6 +24,7 @@ app.use((req, res, next) => {
 
 // Configuración de middlewares
 app.use(bodyParser.json());
+app.use(upload.single('archivo_cotizacion'));
 
 // Rutas API
 app.use('/api', requerimientosRoutes);
