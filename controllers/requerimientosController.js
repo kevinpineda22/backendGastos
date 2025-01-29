@@ -32,7 +32,7 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: uploadError.message });
     }
 
-    const archivoCotizacionUrl = uploadData.path;
+    const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
@@ -169,21 +169,29 @@ export const crearRequerimiento = async (req, res) => {
 </html>
 `;
 
-    await sendEmail(
-      'desarrollo@merkahorrosas.com', // Correo del encargado
-      'Nuevo Requerimiento de Gasto',
-      mensajeEncargado
-    );
+const archivoAdjunto = {
+  filename: archivoCotizacion.originalname,
+  content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
+  encoding: 'base64', // Se codifica el archivo como base64
+};
 
-    // Responder al cliente con un objeto JSON con el mensaje de éxito
-    return res.status(201).json({
-      message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-      token, // Devuelve el token generado
-    });
-  } catch (error) {
-    console.error("❌ Error en la creación del requerimiento:", error);
-    return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
-  }
+// Enviar el correo con el archivo adjunto
+await sendEmail(
+  'desarrollo@merkahorrosas.com', // Correo del encargado
+  'Nuevo Requerimiento de Gasto',
+  mensajeEncargado,
+  [archivoAdjunto] // Adjuntamos el archivo
+);
+
+// Responder al cliente con un objeto JSON con el mensaje de éxito
+return res.status(201).json({
+  message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
+  token, // Devuelve el token generado
+});
+} catch (error) {
+console.error("❌ Error en la creación del requerimiento:", error);
+return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
+}
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {

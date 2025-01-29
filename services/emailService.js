@@ -16,13 +16,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = async (to, subject, htmlContent) => {
+export const sendEmail = async (to, subject, htmlContent, attachments = []) => {
   try {
+    // Enviar correo con archivo adjunto
     await transporter.sendMail({
       from: `"Merkahorro" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html: htmlContent, // Asegúrate de usar la propiedad `html` para correos con diseño
+      attachments, // Aquí agregamos los archivos adjuntos
     });
     console.log(`📨 Correo enviado a ${to}`);
   } catch (error) {
