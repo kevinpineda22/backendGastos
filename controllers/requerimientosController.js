@@ -1,11 +1,15 @@
-// filepath: /path/to/backend/controllers/gastosController.js
 import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
+import multer from 'multer';
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, archivo_cotizacion, correo_empleado } = req.body;
+  const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado } = req.body;
+  const archivoCotizacion = req.file;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -14,6 +18,21 @@ export const crearRequerimiento = async (req, res) => {
   const token = crypto.randomBytes(16).toString('hex');
 
   try {
+    // Subir el archivo PDF al bucket de Supabase
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('cotizaciones')
+      .upload(`cotizaciones/${archivoCotizacion.originalname}`, archivoCotizacion.buffer, {
+        contentType: archivoCotizacion.mimetype,
+      });
+
+    if (uploadError) {
+      console.error('❌ Error al subir el archivo a Supabase:', uploadError);
+      return res.status(500).json({ error: uploadError.message });
+    }
+
+    const archivoCotizacionUrl = uploadData.Key;
+
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
@@ -26,7 +45,7 @@ export const crearRequerimiento = async (req, res) => {
         centro_costos,
         descripcion, 
         monto_estimado, 
-        archivo_cotizacion, 
+        archivo_cotizacion: archivoCotizacionUrl, 
         correo_empleado, 
         token, 
         estado: 'Pendiente' 
@@ -122,7 +141,7 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Cotización:</td>
-                  <td><a href="${archivo_cotizacion}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
+                  <td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
                 </tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>

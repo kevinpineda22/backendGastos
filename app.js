@@ -3,14 +3,10 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import requerimientosRoutes from './routes/requerimientosRoutes.js';
-import multer from 'multer';
 
 dotenv.config();
 
 const app = express();
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 app.use(cors({ origin: '*' }));
 
@@ -24,11 +20,9 @@ app.use((req, res, next) => {
 
 // Configuración de middlewares
 app.use(bodyParser.json());
-app.use(upload.single('archivo_cotizacion'));
 
 // Rutas API
-app.use('/api', requerimientosRoutes);
-app.use('/', requerimientosRoutes);
+app.use('/api/requerimientos', requerimientosRoutes);
 
 // Ruta de prueba para verificar que el servidor está funcionando
 app.get('/', (req, res) => {
