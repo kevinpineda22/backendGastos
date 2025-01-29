@@ -18,6 +18,7 @@ export const crearRequerimiento = async (req, res) => {
    const montoFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(monto_estimado);
    console.log("Monto estimado formateado:", montoFormateado);
    
+
    
   // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
