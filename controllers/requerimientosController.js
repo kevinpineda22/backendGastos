@@ -41,8 +41,8 @@ export const crearRequerimiento = async (req, res) => {
         area,
         procesos,
         sede,
-        unidad,
-        centro_costos,
+        unidad: `{${unidad.join(',')}}`, // Formatear como array
+        centro_costos: `{${centro_costos.join(',')}}`, // Formatear como array
         descripcion, 
         monto_estimado, 
         archivo_cotizacion: archivoCotizacionUrl, 
