@@ -3,6 +3,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';  // Asegúrate de que cors esté importado
 import dotenv from 'dotenv';
 import requerimientosRoutes from './routes/requerimientosRoutes.js';
+import multer from 'multer';
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+app.use(upload.single('archivo_cotizacion'));
 
 dotenv.config();
 

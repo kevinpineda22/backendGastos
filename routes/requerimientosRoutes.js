@@ -1,11 +1,17 @@
 import express from 'express';
 import { crearRequerimiento, actualizarEstado, obtenerRequerimientos, decidirRequerimiento } from '../controllers/requerimientosController.js';
+import multer from 'multer';
 
 const router = express.Router();
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-router.post('/requerimientos', crearRequerimiento);
-router.patch('/requerimientos/estado', actualizarEstado);
-router.get('/requerimientos', obtenerRequerimientos);
-router.post('/requerimientos/decidir', decidirRequerimiento);
+// Ruta para crear un requerimiento con carga de archivo
+router.post('/crear', upload.single('archivo_cotizacion'), crearRequerimiento);
+
+// Otras rutas
+router.post('/actualizarEstado', actualizarEstado);
+router.get('/obtenerRequerimientos', obtenerRequerimientos);
+router.post('/decidirRequerimiento', decidirRequerimiento);
 
 export default router;
