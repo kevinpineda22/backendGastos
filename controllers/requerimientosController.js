@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { nombre_completo, area, procesos, sede, unidad, descripcion, monto_estimado, archivo_cotizacion, correo_empleado } = req.body;
+  const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, archivo_cotizacion, correo_empleado } = req.body;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -22,6 +22,7 @@ export const crearRequerimiento = async (req, res) => {
         procesos,
         sede,
         unidad,
+        centro_costos,
         descripcion, 
         monto_estimado, 
         archivo_cotizacion, 
@@ -109,6 +110,10 @@ export const crearRequerimiento = async (req, res) => {
                 <tr>
                   <td style="font-weight: bold;">Unidad de Negocio:</td>
                   <td>${unidad}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: bold;">Centro de Costos:</td>
+                  <td>${centro_costos}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Monto Estimado:</td>
