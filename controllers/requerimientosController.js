@@ -31,7 +31,7 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: uploadError.message });
     }
 
-    const archivoCotizacionUrl = uploadData.Key;
+    const archivoCotizacionUrl = uploadData.path;
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
@@ -166,7 +166,7 @@ export const crearRequerimiento = async (req, res) => {
     // Responder al cliente con un objeto JSON con el mensaje de éxito
     return res.status(201).json({
       message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-      redirectTo: '/' // O puedes redirigir a una página específica
+      token, // Devuelve el token generado
     });
   } catch (error) {
     console.error("❌ Error en la creación del requerimiento:", error);
