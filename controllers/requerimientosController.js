@@ -14,12 +14,6 @@ export const crearRequerimiento = async (req, res) => {
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
 
-   // Formatear el monto estimado como dinero en formato colombiano
-   const montoFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(monto_estimado);
-   console.log("Monto estimado formateado:", montoFormateado);
-   
-
-   
   // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
 
@@ -306,22 +300,15 @@ export const decidirRequerimiento = async (req, res) => {
 
     // Correo para el solicitante (texto plano)
     const mensajeSolicitante = `
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  </head>
-  <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-    <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-      <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
-      <p>Estimado ${data.nombre_completo},</p>
-      <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
-      <p>Si tienes alguna duda, por favor, contáctanos.</p>
-      <p style="margin-top: 20px;">Saludos cordiales,</p>
-      <p>El equipo de gestión de gastos<br>Merkahorro</p>
-    </div>
-  </body>
-</html>
+Estimado ${data.nombre_completo},
+
+Tu requerimiento de gasto con la descripción "${data.descripcion}" ha sido ${decision.toLowerCase()}.
+
+Si tienes alguna duda, por favor, contáctanos.
+
+Saludos cordiales,
+El equipo de gestión de gastos
+Merkahorro
 `;
 
     const correoSolicitante = data.correo_empleado;
