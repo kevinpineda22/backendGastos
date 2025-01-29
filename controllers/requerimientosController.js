@@ -300,15 +300,22 @@ export const decidirRequerimiento = async (req, res) => {
 
     // Correo para el solicitante (texto plano)
     const mensajeSolicitante = `
-Estimado ${data.nombre_completo},
-
-Tu requerimiento de gasto con la descripción "${data.descripcion}" ha sido ${decision.toLowerCase()}.
-
-Si tienes alguna duda, por favor, contáctanos.
-
-Saludos cordiales,
-El equipo de gestión de gastos
-Merkahorro
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
+      <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
+      <p>Estimado ${data.nombre_completo},</p>
+      <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>Si tienes alguna duda, por favor, contáctanos.</p>
+      <p style="margin-top: 20px;">Saludos cordiales,</p>
+      <p>El equipo de gestión de gastos<br>Merkahorro</p>
+    </div>
+  </body>
+</html>
 `;
 
     const correoSolicitante = data.correo_empleado;
