@@ -1,3 +1,4 @@
+// filepath: /path/to/backend/controllers/gastosController.js
 import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
@@ -109,11 +110,11 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Unidad de Negocio:</td>
-                  <td>${unidad}</td>
+                  <td>${unidad.join(', ')}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Centro de Costos:</td>
-                  <td>${centro_costos}</td>
+                  <td>${centro_costos.join(', ')}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Monto Estimado:</td>
