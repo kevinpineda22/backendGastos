@@ -32,7 +32,7 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: uploadError.message });
     }
 
-    const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+    const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/${uploadData.Key}`;
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
@@ -41,8 +41,6 @@ export const crearRequerimiento = async (req, res) => {
     // Convertir los arrays a formato PostgreSQL
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
-
-    
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
@@ -192,6 +190,7 @@ console.error("❌ Error en la creación del requerimiento:", error);
 return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
 }
 };
+
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
   const { token, decision } = req.body;
