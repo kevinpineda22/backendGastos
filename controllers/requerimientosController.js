@@ -37,7 +37,11 @@ const archivoCotizacionUrl = uploadData.path;
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
     const centroCostosArray = Array.isArray(centro_costos) ? centro_costos : [centro_costos];
-
+    
+    // Convertir los arrays a formato PostgreSQL
+    const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
+    const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
+    
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
@@ -46,8 +50,8 @@ const archivoCotizacionUrl = uploadData.path;
         area,
         procesos,
         sede,
-        unidad: `{${unidadArray.join(',')}}`, // Formatear como array
-        centro_costos: `{${centroCostosArray.join(',')}}`, // Formatear como array
+        unidad: unidadPgArray, // Formatear como array PostgreSQL
+        centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
         descripcion, 
         monto_estimado, 
         archivo_cotizacion: archivoCotizacionUrl, 
@@ -56,7 +60,7 @@ const archivoCotizacionUrl = uploadData.path;
         estado: 'Pendiente' 
       }])
       .select();
-
+    
     if (error) {
       console.error('❌ Error al insertar en Supabase:', error);
       return res.status(500).json({ error: error.message });
