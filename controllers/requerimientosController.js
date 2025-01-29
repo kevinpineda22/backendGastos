@@ -42,6 +42,7 @@ export const crearRequerimiento = async (req, res) => {
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
 
+    
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
