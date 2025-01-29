@@ -33,6 +33,10 @@ export const crearRequerimiento = async (req, res) => {
 
     const archivoCotizacionUrl = uploadData.path;
 
+    // Asegurarse de que unidad y centro_costos sean arrays
+    const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
+    const centroCostosArray = Array.isArray(centro_costos) ? centro_costos : [centro_costos];
+
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
@@ -41,8 +45,8 @@ export const crearRequerimiento = async (req, res) => {
         area,
         procesos,
         sede,
-        unidad: `{${unidad.join(',')}}`, // Formatear como array
-        centro_costos: `{${centro_costos.join(',')}}`, // Formatear como array
+        unidad: `{${unidadArray.join(',')}}`, // Formatear como array
+        centro_costos: `{${centroCostosArray.join(',')}}`, // Formatear como array
         descripcion, 
         monto_estimado, 
         archivo_cotizacion: archivoCotizacionUrl, 
@@ -129,11 +133,11 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Unidad de Negocio:</td>
-                  <td>${unidad.join(', ')}</td>
+                  <td>${unidadArray.join(', ')}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Centro de Costos:</td>
-                  <td>${centro_costos.join(', ')}</td>
+                  <td>${centroCostosArray.join(', ')}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Monto Estimado:</td>
@@ -173,7 +177,6 @@ export const crearRequerimiento = async (req, res) => {
     return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
   }
 };
-
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
   const { token, decision } = req.body;
