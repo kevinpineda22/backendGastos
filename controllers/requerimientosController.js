@@ -19,19 +19,20 @@ export const crearRequerimiento = async (req, res) => {
 
   try {
     // Subir el archivo PDF al bucket de Supabase
-    const { data: uploadData, error: uploadError } = await supabase
-      .storage
-      .from('cotizaciones')
-      .upload(`cotizaciones/${archivoCotizacion.originalname}`, archivoCotizacion.buffer, {
-        contentType: archivoCotizacion.mimetype,
-      });
+    const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
+const { data: uploadData, error: uploadError } = await supabase
+  .storage
+  .from('cotizaciones')
+  .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+    contentType: archivoCotizacion.mimetype,
+  });
 
-    if (uploadError) {
-      console.error('❌ Error al subir el archivo a Supabase:', uploadError);
-      return res.status(500).json({ error: uploadError.message });
-    }
+if (uploadError) {
+  console.error('❌ Error al subir el archivo a Supabase:', uploadError);
+  return res.status(500).json({ error: uploadError.message });
+}
 
-    const archivoCotizacionUrl = uploadData.path;
+const archivoCotizacionUrl = uploadData.path;
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
