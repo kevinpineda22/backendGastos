@@ -20,28 +20,31 @@ export const crearRequerimiento = async (req, res) => {
   try {
     // Subir el archivo PDF al bucket de Supabase
     const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
-const { data: uploadData, error: uploadError } = await supabase
-  .storage
-  .from('cotizaciones')
-  .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
-    contentType: archivoCotizacion.mimetype,
-  });
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('cotizaciones')
+      .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+        contentType: archivoCotizacion.mimetype,
+      });
 
-if (uploadError) {
-  console.error('❌ Error al subir el archivo a Supabase:', uploadError);
-  return res.status(500).json({ error: uploadError.message });
-}
+    if (uploadError) {
+      console.error('❌ Error al subir el archivo a Supabase:', uploadError);
+      return res.status(500).json({ error: uploadError.message });
+    }
 
-const archivoCotizacionUrl = uploadData.path;
+    const archivoCotizacionUrl = uploadData.path;
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
     const centroCostosArray = Array.isArray(centro_costos) ? centro_costos : [centro_costos];
-    
+
     // Convertir los arrays a formato PostgreSQL
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
-    
+
+    // Limpiar el valor de monto_estimado
+    const montoEstimadoLimpio = parseFloat(monto_estimado.replace(/[^0-9.-]+/g, ''));
+
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
@@ -53,14 +56,14 @@ const archivoCotizacionUrl = uploadData.path;
         unidad: unidadPgArray, // Formatear como array PostgreSQL
         centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
         descripcion, 
-        monto_estimado, 
+        monto_estimado: montoEstimadoLimpio, // Usar el valor limpio
         archivo_cotizacion: archivoCotizacionUrl, 
         correo_empleado, 
         token, 
         estado: 'Pendiente' 
       }])
       .select();
-    
+
     if (error) {
       console.error('❌ Error al insertar en Supabase:', error);
       return res.status(500).json({ error: error.message });
