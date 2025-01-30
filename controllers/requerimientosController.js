@@ -156,7 +156,7 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-              <a href="http://localhost:5174/AprobarRechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
+              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
               <p style="margin-top: 30px;">Saludos cordiales,<br>El equipo de gestión de gastos<br>Merkahorro</p>
             </td>
           </tr>
