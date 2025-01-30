@@ -50,16 +50,16 @@ export const crearRequerimiento = async (req, res) => {
         const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
         const { data: uploadData, error: uploadError } = await supabase
           .storage
-          .from('cotizaciones')
+          .from('cotizaciones')  // El bucket que estás usando
           .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
             contentType: archivo.mimetype,
           });
-
+    
         if (uploadError) {
           console.error('❌ Error al subir el archivo del proveedor a Supabase:', uploadError);
           return res.status(500).json({ error: uploadError.message });
         }
-
+    
         const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
         archivosProveedorUrls.push(archivoUrl);
       }
@@ -98,10 +98,10 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-  
+
     // Correo para el encargado en texto plano
     const mensajeEncargado = `
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -185,6 +185,12 @@ export const crearRequerimiento = async (req, res) => {
                   <td style="font-weight: bold;">Cotización:</td>
                   <td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
                 </tr>
+                <tr>
+                  <td style="font-weight: bold;">Archivos del Proveedor:</td>
+                  <td>
+                    ${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}
+                  </td>
+                </tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
               <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
@@ -198,51 +204,49 @@ export const crearRequerimiento = async (req, res) => {
 </body>
 </html>
 `;
-
-
- // Crear el array de archivos adjuntos
- const archivoAdjunto = [];
-
- // 1. Agregar el archivo de la cotización (es obligatorio)
- archivoAdjunto.push({
-   filename: archivoCotizacion.originalname,
-   content: archivoCotizacion.buffer, // Enviamos el contenido del archivo de cotización
-   encoding: 'base64',
- });
-
- // 2. Agregar el archivo del proveedor (si existe)
- if (archivosProveedor && archivosProveedor.length > 0) {
-  archivosProveedor.forEach((archivo) => {
+    
+    // Crear el array de archivos adjuntos
+    const archivoAdjunto = [];
+    
+    // 1. Agregar el archivo de la cotización (es obligatorio)
     archivoAdjunto.push({
-      filename: archivo.originalname,
-      content: archivo.buffer,
+      filename: archivoCotizacion.originalname,
+      content: archivoCotizacion.buffer, // Enviamos el contenido del archivo de cotización
       encoding: 'base64',
     });
-  });
-}
+    
+    // 2. Agregar los archivos del proveedor como enlaces (si existe)
+    if (archivosProveedor && archivosProveedor.length > 0) {
+      archivosProveedor.forEach((archivo) => {
+        archivoAdjunto.push({
+          filename: archivo.originalname,
+          content: archivo.buffer,
+          encoding: 'base64',
+        });
+      });
+    }
+    
+    // Enviar el correo con los archivos adjuntos
+    await sendEmail(
+      'desarrollo@merkahorrosas.com', // Correo del encargado
+      'Nuevo Requerimiento de Gasto',
+      mensajeEncargado,
+      archivoAdjunto // Pasa el array directamente
+    );
+    
+    // Respuesta exitosa
+    res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
 
 
-// Enviar el correo con el archivo adjunto
-await sendEmail(
-  'desarrollo@merkahorrosas.com', // Correo del encargado
-  'Nuevo Requerimiento de Gasto',
-  mensajeEncargado,
-  archivoAdjunto // Pasa el array directamente
-);
-
- // Respuesta exitosa
- res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
-
-
-// Responder al cliente con un objeto JSON con el mensaje de éxito
-return res.status(201).json({
-  message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-  token, // Devuelve el token generado
-});
-} catch (error) {
-console.error("❌ Error en la creación del requerimiento:", error);
-return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
-}
+    // Responder al cliente con un objeto JSON con el mensaje de éxito
+    return res.status(201).json({
+      message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
+      token, // Devuelve el token generado
+    });
+  } catch (error) {
+    console.error("❌ Error en la creación del requerimiento:", error);
+    return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
+  }
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
