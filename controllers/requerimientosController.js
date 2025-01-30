@@ -231,11 +231,10 @@ export const actualizarEstado = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-      <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
-      <p>
+       <p>
         ${decision.toLowerCase() === 'aprobada'
-        ? 'Tu necesidad de conciencia del gasto ha sido considerada necesaria para continuar con el fortalecimiento del proceso.'
-        : 'Tu necesidad de conciencia del gasto no la hemos considerado necesaria para el objetivo que nos planteas.'
+        ? `Tu necesidad de conciencia del gasto ${data.descripcion} ha sido considerada necesaria para continuar con el fortalecimiento del proceso.`
+        : `Tu necesidad de conciencia del gasto ${data.descripcion} no la hemos considerado necesaria para el objetivo que nos planteas.`
       }
       </p>
          <p style="margin-top: 20px;">
