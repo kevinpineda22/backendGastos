@@ -42,24 +42,24 @@ export const crearRequerimiento = async (req, res) => {
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
 
-
+    
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
-      .insert([{
-        nombre_completo,
+      .insert([{ 
+        nombre_completo, 
         area,
         procesos,
         sede,
         unidad: unidadPgArray, // Formatear como array PostgreSQL
         centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
-        descripcion,
+        descripcion, 
         monto_estimado,
-        archivo_cotizacion: archivoCotizacionUrl,
-        correo_empleado,
-        token,
-        estado: 'Pendiente'
+        archivo_cotizacion: archivoCotizacionUrl, 
+        correo_empleado, 
+        token, 
+        estado: 'Pendiente' 
       }])
       .select();
 
@@ -168,33 +168,40 @@ export const crearRequerimiento = async (req, res) => {
 </html>
 `;
 
-    const archivoAdjunto = {
-      filename: archivoCotizacion.originalname,
-      content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
-      encoding: 'base64', // Se codifica el archivo como base64
-    };
+const archivoAdjunto = {
+  filename: archivoCotizacion.originalname,
+  content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
+  encoding: 'base64', // Se codifica el archivo como base64
+};
 
-    // Enviar el correo con el archivo adjunto
-    await sendEmail(
-      'desarrollo@merkahorrosas.com', // Correo del encargado
-      'Nuevo Requerimiento de Gasto',
-      mensajeEncargado,
-      [archivoAdjunto] // Adjuntamos el archivo
-    );
+// Enviar el correo con el archivo adjunto
+await sendEmail(
+  'desarrollo@merkahorrosas.com', // Correo del encargado
+  'Nuevo Requerimiento de Gasto',
+  mensajeEncargado,
+  [archivoAdjunto] // Adjuntamos el archivo
+);
 
-    // Responder al cliente con un objeto JSON con el mensaje de éxito
-    return res.status(201).json({
-      message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-      token, // Devuelve el token generado
-    });
-  } catch (error) {
-    console.error("❌ Error en la creación del requerimiento:", error);
-    return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
-  }
+// Responder al cliente con un objeto JSON con el mensaje de éxito
+return res.status(201).json({
+  message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
+  token, // Devuelve el token generado
+});
+} catch (error) {
+console.error("❌ Error en la creación del requerimiento:", error);
+return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
+}
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
-  const { token, decision } = req.body;
+  let { token, decision } = req.body;
+
+  // Modificar la palabra "aprobado" y "rechazado" por otras frases
+  if (decision === 'aprobado') {
+    decision = '  ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
+  } else if (decision === 'rechazado') {
+    decision = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
+  }
 
   try {
     // Obtener el correo del solicitante a partir del token
@@ -229,20 +236,14 @@ export const actualizarEstado = async (req, res) => {
   </head>
   <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-      <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto</h2>
+      <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-       <p>
-        ${decision.toLowerCase() === 'aprobada'
-        ? `Tu necesidad de conciencia del gasto ${data.descripcion} ha sido considerada necesaria para continuar con el fortalecimiento del proceso.`
-        : `Tu necesidad de conciencia del gasto ${data.descripcion} no la hemos considerado necesaria para el objetivo que nos planteas.`
-      }
-      </p>
-         <p style="margin-top: 20px;">
+      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
+      <p style="margin-top: 20px;">
   Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
   <br>
   <p style="font-style: italic;">Autor: Madre Teresa de Calcuta</p>
 </p>
-      
     </div>
   </body>
 </html>
@@ -322,22 +323,14 @@ export const decidirRequerimiento = async (req, res) => {
   </head>
   <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-      <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto</h2>
+      <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-  
-      <p>
-        ${decision.toLowerCase() === 'aprobada'
-        ? `Tu necesidad de conciencia del gasto ${data.descripcion} ha sido considerada necesaria para continuar con el fortalecimiento del proceso.`
-        : `Tu necesidad de conciencia del gasto ${data.descripcion} no la hemos considerado necesaria para el objetivo que nos planteas.`
-      }
-      </p>
-      
+       <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
       <p style="margin-top: 20px;">
   Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
   <br>
   <p style="font-style: italic;">Autor: Madre Teresa de Calcuta</p>
 </p>
-      
     </div>
   </body>
 </html>
