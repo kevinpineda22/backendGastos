@@ -9,11 +9,16 @@ const upload = multer({ storage });
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
   const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado } = req.body;
-  const archivoCotizacion = req.file;
-  const archivosProveedor = req.files;
+  const archivoCotizacion = req.files['archivo_cotizacion'] ? req.files['archivo_cotizacion'][0] : null;
+  const archivosProveedor = req.files['archivos_proveedor'] || [];
 
-  // Verifica que el correo del solicitante se reciba correctamente
+  // Verificar que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
+
+  // Verifica que el archivo de cotización esté presente
+  if (!archivoCotizacion) {
+    return res.status(400).json({ error: 'El archivo de cotización es obligatorio.' });
+  }
 
   // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
@@ -38,28 +43,27 @@ export const crearRequerimiento = async (req, res) => {
       archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
     }
 
-       // Subir los archivos proporcionados por el proveedor al bucket de Supabase
-       let archivosProveedorUrls = [];
-       if (archivosProveedor && archivosProveedor.length > 0) {
-         for (let archivo of archivosProveedor) {
-           const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
-           const { data: uploadData, error: uploadError } = await supabase
-             .storage
-             .from('cotizaciones')
-             .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
-               contentType: archivo.mimetype,
-             });
-   
-           if (uploadError) {
-             console.error('❌ Error al subir el archivo del proveedor a Supabase:', uploadError);
-             return res.status(500).json({ error: uploadError.message });
-           }
-   
-           const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
-           archivosProveedorUrls.push(archivoUrl);
-         }
-       }
-   
+    // Subir los archivos proporcionados por el proveedor a Supabase
+    let archivosProveedorUrls = [];
+    if (archivosProveedor && archivosProveedor.length > 0) {
+      for (let archivo of archivosProveedor) {
+        const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
+        const { data: uploadData, error: uploadError } = await supabase
+          .storage
+          .from('cotizaciones')
+          .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
+            contentType: archivo.mimetype,
+          });
+
+        if (uploadError) {
+          console.error('❌ Error al subir el archivo del proveedor a Supabase:', uploadError);
+          return res.status(500).json({ error: uploadError.message });
+        }
+
+        const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+        archivosProveedorUrls.push(archivoUrl);
+      }
+    }
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
@@ -69,25 +73,23 @@ export const crearRequerimiento = async (req, res) => {
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
 
-    
-
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
-      .insert([{ 
-        nombre_completo, 
+      .insert([{
+        nombre_completo,
         area,
         procesos,
         sede,
-        unidad: unidadPgArray, // Formatear como array PostgreSQL
-        centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
-        descripcion, 
+        unidad: unidadPgArray,
+        centro_costos: centroCostosPgArray,
+        descripcion,
         monto_estimado,
-        archivo_cotizacion: archivoCotizacionUrl, 
-        archivos_proveedor: archivosProveedorUrls, // Almacenamos los URLs de los archivos del proveedor
-        correo_empleado, 
-        token, 
-        estado: 'Pendiente' 
+        archivo_cotizacion: archivoCotizacionUrl,
+        archivos_proveedor: archivosProveedorUrls,  // Guardar las URLs de los archivos de proveedores
+        correo_empleado,
+        token,
+        estado: 'Pendiente'
       }])
       .select();
 
@@ -96,6 +98,7 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
+  
     // Correo para el encargado en texto plano
     const mensajeEncargado = `
 <!DOCTYPE html>
@@ -209,14 +212,15 @@ export const crearRequerimiento = async (req, res) => {
 
  // 2. Agregar el archivo del proveedor (si existe)
  if (archivosProveedor && archivosProveedor.length > 0) {
-   archivosProveedor.forEach((archivo) => {
-     archivoAdjunto.push({
-       filename: archivo.originalname,
-       content: archivo.buffer,
-       encoding: 'base64',
-     });
-   });
- }
+  archivosProveedor.forEach((archivo) => {
+    archivoAdjunto.push({
+      filename: archivo.originalname,
+      content: archivo.buffer,
+      encoding: 'base64',
+    });
+  });
+}
+
 
 // Enviar el correo con el archivo adjunto
 await sendEmail(
