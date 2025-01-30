@@ -234,14 +234,14 @@ export const actualizarEstado = async (req, res) => {
       <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
       <p>
         ${decision.toLowerCase() === 'aprobada'
-          ? `Tu necesidad de conciencia del gasto ${data.descripcion} ha sido considerada necesaria para continuar con el fortalecimiento del proceso.`
-          : `Tu necesidad de conciencia del gasto ${data.descripcion} no la hemos considerado necesaria para el objetivo que nos planteas.`
-        }
+        ? 'Tu necesidad de conciencia del gasto ha sido considerada necesaria para continuar con el fortalecimiento del proceso.'
+        : 'Tu necesidad de conciencia del gasto no la hemos considerado necesaria para el objetivo que nos planteas.'
+      }
       </p>
          <p style="margin-top: 20px;">
   Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
   <br>
-  <span style="font-style: italic;">Autor: Madre Teresa de Calcuta</span>
+  <p style="font-style: italic;">Autor: Madre Teresa de Calcuta</p>
 </p>
       
     </div>
@@ -336,7 +336,7 @@ export const decidirRequerimiento = async (req, res) => {
       <p style="margin-top: 20px;">
   Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
   <br>
-  <span style="font-style: italic;">Autor: Madre Teresa de Calcuta</span>
+  <p style="font-style: italic;">Autor: Madre Teresa de Calcuta</p>
 </p>
       
     </div>
