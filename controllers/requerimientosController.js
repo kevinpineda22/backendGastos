@@ -194,14 +194,13 @@ return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud.
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
-  var { token, decision } = req.body;
+  let { token, decision } = req.body;
 
   // Modificar la palabra "aprobado" y "rechazado" por otras frases
-  var decisionFrase;
   if (decision === 'aprobado') {
-    decisionFrase = 'ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
+    decision = '  ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
   } else if (decision === 'rechazado') {
-    decisionFrase = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
+    decision = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
   }
 
   try {
@@ -239,16 +238,15 @@ export const actualizarEstado = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decisionFrase}</strong>.</p>
-      <p style="margin-top: 20px;">
-  Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
-  <br>
-  <p style="font-style: italic;">Autor: Madre Teresa de Calcuta</p>
-</p>
+      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>Si tienes alguna duda, por favor, contáctanos.</p>
+      <p style="margin-top: 20px;">Saludos cordiales,</p>
+      <p>El equipo de gestión de gastos<br>Merkahorro</p>
     </div>
   </body>
 </html>
 `;
+
 
     const correoSolicitante = data.correo_empleado;
 
@@ -325,12 +323,10 @@ export const decidirRequerimiento = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decisionFrase}</strong>.</p>
-      <p style="margin-top: 20px;">
-  Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
-  <br>
-  <p style="font-style: italic;">Autor: Madre Teresa de Calcuta</p>
-</p>
+       <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>Si tienes alguna duda, por favor, contáctanos.</p>
+      <p style="margin-top: 20px;">Saludos cordiales,</p>
+      <p>El equipo de gestión de gastos<br>Merkahorro</p>
     </div>
   </body>
 </html>
