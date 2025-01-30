@@ -9,61 +9,31 @@ const upload = multer({ storage });
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
   const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado } = req.body;
-  const archivoCotizacion = req.files['archivo_cotizacion'] ? req.files['archivo_cotizacion'][0] : null;
-  const archivosProveedor = req.files['archivos_proveedor'] || [];
+  const archivoCotizacion = req.file;
 
-  // Verificar que el correo del solicitante se reciba correctamente
+  // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
-
-  // Verifica que el archivo de cotización esté presente
-  if (!archivoCotizacion) {
-    return res.status(400).json({ error: 'El archivo de cotización es obligatorio.' });
-  }
 
   // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
 
   try {
-    // Subir el archivo PDF de cotización al bucket de Supabase
-    let archivoCotizacionUrl = '';
-    if (archivoCotizacion) {
-      const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
-      const { data: uploadData, error: uploadError } = await supabase
-        .storage
-        .from('cotizaciones')
-        .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
-          contentType: archivoCotizacion.mimetype,
-        });
+    // Subir el archivo PDF al bucket de Supabase
+    const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('cotizaciones')
+      .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+        contentType: archivoCotizacion.mimetype,
+      });
 
-      if (uploadError) {
-        console.error('❌ Error al subir el archivo de cotización a Supabase:', uploadError);
-        return res.status(500).json({ error: uploadError.message });
-      }
-
-      archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+    if (uploadError) {
+      console.error('❌ Error al subir el archivo a Supabase:', uploadError);
+      return res.status(500).json({ error: uploadError.message });
     }
 
-    // Subir los archivos proporcionados por el proveedor a Supabase
-    let archivosProveedorUrls = [];
-    if (archivosProveedor && archivosProveedor.length > 0) {
-      for (let archivo of archivosProveedor) {
-        const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
-        const { data: uploadData, error: uploadError } = await supabase
-          .storage
-          .from('cotizaciones')  // El bucket que estás usando
-          .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
-            contentType: archivo.mimetype,
-          });
+    const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
     
-        if (uploadError) {
-          console.error('❌ Error al subir el archivo del proveedor a Supabase:', uploadError);
-          return res.status(500).json({ error: uploadError.message });
-        }
-    
-        const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
-        archivosProveedorUrls.push(archivoUrl);
-      }
-    }
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
@@ -73,23 +43,24 @@ export const crearRequerimiento = async (req, res) => {
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
 
+    
+
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
-      .insert([{
-        nombre_completo,
+      .insert([{ 
+        nombre_completo, 
         area,
         procesos,
         sede,
-        unidad: unidadPgArray,
-        centro_costos: centroCostosPgArray,
-        descripcion,
+        unidad: unidadPgArray, // Formatear como array PostgreSQL
+        centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
+        descripcion, 
         monto_estimado,
-        archivo_cotizacion: archivoCotizacionUrl,
-        archivos_proveedor: archivosProveedorUrls,  // Guardar las URLs de los archivos de proveedores
-        correo_empleado,
-        token,
-        estado: 'Pendiente'
+        archivo_cotizacion: archivoCotizacionUrl, 
+        correo_empleado, 
+        token, 
+        estado: 'Pendiente' 
       }])
       .select();
 
@@ -98,10 +69,9 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-
     // Correo para el encargado en texto plano
     const mensajeEncargado = `
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -185,12 +155,6 @@ export const crearRequerimiento = async (req, res) => {
                   <td style="font-weight: bold;">Cotización:</td>
                   <td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
                 </tr>
-                <tr>
-                  <td style="font-weight: bold;">Archivos del Proveedor:</td>
-                  <td>
-                    ${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}
-                  </td>
-                </tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
               <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
@@ -204,49 +168,30 @@ export const crearRequerimiento = async (req, res) => {
 </body>
 </html>
 `;
-    
-    // Crear el array de archivos adjuntos
-    const archivoAdjunto = [];
-    
-    // 1. Agregar el archivo de la cotización (es obligatorio)
-    archivoAdjunto.push({
-      filename: archivoCotizacion.originalname,
-      content: archivoCotizacion.buffer, // Enviamos el contenido del archivo de cotización
-      encoding: 'base64',
-    });
-    
-    // 2. Agregar los archivos del proveedor como enlaces (si existe)
-    if (archivosProveedor && archivosProveedor.length > 0) {
-      archivosProveedor.forEach((archivo) => {
-        archivoAdjunto.push({
-          filename: archivo.originalname,
-          content: archivo.buffer,
-          encoding: 'base64',
-        });
-      });
-    }
-    
-    // Enviar el correo con los archivos adjuntos
-    await sendEmail(
-      'desarrollo@merkahorrosas.com', // Correo del encargado
-      'Nuevo Requerimiento de Gasto',
-      mensajeEncargado,
-      archivoAdjunto // Pasa el array directamente
-    );
-    
-    // Respuesta exitosa
-    res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
 
+const archivoAdjunto = {
+  filename: archivoCotizacion.originalname,
+  content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
+  encoding: 'base64', // Se codifica el archivo como base64
+};
 
-    // Responder al cliente con un objeto JSON con el mensaje de éxito
-    return res.status(201).json({
-      message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-      token, // Devuelve el token generado
-    });
-  } catch (error) {
-    console.error("❌ Error en la creación del requerimiento:", error);
-    return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
-  }
+// Enviar el correo con el archivo adjunto
+await sendEmail(
+  'desarrollo@merkahorrosas.com', // Correo del encargado
+  'Nuevo Requerimiento de Gasto',
+  mensajeEncargado,
+  [archivoAdjunto] // Adjuntamos el archivo
+);
+
+// Responder al cliente con un objeto JSON con el mensaje de éxito
+return res.status(201).json({
+  message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
+  token, // Devuelve el token generado
+});
+} catch (error) {
+console.error("❌ Error en la creación del requerimiento:", error);
+return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
+}
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
