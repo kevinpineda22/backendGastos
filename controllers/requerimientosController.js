@@ -10,6 +10,7 @@ const upload = multer({ storage });
 export const crearRequerimiento = async (req, res) => {
   const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado } = req.body;
   const archivoCotizacion = req.file;
+  const archivosProveedor = req.files;
 
   // Verifica que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
@@ -18,21 +19,47 @@ export const crearRequerimiento = async (req, res) => {
   const token = crypto.randomBytes(16).toString('hex');
 
   try {
-    // Subir el archivo PDF al bucket de Supabase
-    const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
-    const { data: uploadData, error: uploadError } = await supabase
-      .storage
-      .from('cotizaciones')
-      .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
-        contentType: archivoCotizacion.mimetype,
-      });
+    // Subir el archivo PDF de cotización al bucket de Supabase
+    let archivoCotizacionUrl = '';
+    if (archivoCotizacion) {
+      const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('cotizaciones')
+        .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+          contentType: archivoCotizacion.mimetype,
+        });
 
-    if (uploadError) {
-      console.error('❌ Error al subir el archivo a Supabase:', uploadError);
-      return res.status(500).json({ error: uploadError.message });
+      if (uploadError) {
+        console.error('❌ Error al subir el archivo de cotización a Supabase:', uploadError);
+        return res.status(500).json({ error: uploadError.message });
+      }
+
+      archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
     }
 
-    const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+       // Subir los archivos proporcionados por el proveedor al bucket de Supabase
+       let archivosProveedorUrls = [];
+       if (archivosProveedor && archivosProveedor.length > 0) {
+         for (let archivo of archivosProveedor) {
+           const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
+           const { data: uploadData, error: uploadError } = await supabase
+             .storage
+             .from('cotizaciones')
+             .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
+               contentType: archivo.mimetype,
+             });
+   
+           if (uploadError) {
+             console.error('❌ Error al subir el archivo del proveedor a Supabase:', uploadError);
+             return res.status(500).json({ error: uploadError.message });
+           }
+   
+           const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+           archivosProveedorUrls.push(archivoUrl);
+         }
+       }
+   
 
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
@@ -57,6 +84,7 @@ export const crearRequerimiento = async (req, res) => {
         descripcion, 
         monto_estimado,
         archivo_cotizacion: archivoCotizacionUrl, 
+        archivos_proveedor: archivosProveedorUrls, // Almacenamos los URLs de los archivos del proveedor
         correo_empleado, 
         token, 
         estado: 'Pendiente' 
@@ -168,19 +196,39 @@ export const crearRequerimiento = async (req, res) => {
 </html>
 `;
 
-const archivoAdjunto = {
-  filename: archivoCotizacion.originalname,
-  content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
-  encoding: 'base64', // Se codifica el archivo como base64
-};
+
+ // Crear el array de archivos adjuntos
+ const archivoAdjunto = [];
+
+ // 1. Agregar el archivo de la cotización (es obligatorio)
+ archivoAdjunto.push({
+   filename: archivoCotizacion.originalname,
+   content: archivoCotizacion.buffer, // Enviamos el contenido del archivo de cotización
+   encoding: 'base64',
+ });
+
+ // 2. Agregar el archivo del proveedor (si existe)
+ if (archivosProveedor && archivosProveedor.length > 0) {
+   archivosProveedor.forEach((archivo) => {
+     archivoAdjunto.push({
+       filename: archivo.originalname,
+       content: archivo.buffer,
+       encoding: 'base64',
+     });
+   });
+ }
 
 // Enviar el correo con el archivo adjunto
 await sendEmail(
   'desarrollo@merkahorrosas.com', // Correo del encargado
   'Nuevo Requerimiento de Gasto',
   mensajeEncargado,
-  [archivoAdjunto] // Adjuntamos el archivo
+  archivoAdjunto // Pasa el array directamente
 );
+
+ // Respuesta exitosa
+ res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
+
 
 // Responder al cliente con un objeto JSON con el mensaje de éxito
 return res.status(201).json({
