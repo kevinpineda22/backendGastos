@@ -197,7 +197,7 @@ export const actualizarEstado = async (req, res) => {
   let { token, decision } = req.body;
 
   // Modificar la palabra "aprobado" y "rechazado" por otras frases
-  if (decision === 'aprobado') {
+  if (decision === 'aprobadoooo') {
     decision = '  ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
   } else if (decision === 'rechazado') {
     decision = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
