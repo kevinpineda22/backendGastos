@@ -197,10 +197,11 @@ export const actualizarEstado = async (req, res) => {
   let { token, decision } = req.body;
 
   // Modificar la palabra "aprobado" y "rechazado" por otras frases
+  let decisionFrase;
   if (decision === 'aprobado') {
-    decision = 'ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
+    decisionFrase = 'ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
   } else if (decision === 'rechazado') {
-    decision = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
+    decisionFrase = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
   }
 
   try {
@@ -238,7 +239,7 @@ export const actualizarEstado = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision}</strong>.</p>
+      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decisionFrase}</strong>.</p>
       <p style="margin-top: 20px;">
   Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
   <br>
@@ -248,7 +249,6 @@ export const actualizarEstado = async (req, res) => {
   </body>
 </html>
 `;
-
 
     const correoSolicitante = data.correo_empleado;
 
