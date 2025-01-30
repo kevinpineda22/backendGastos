@@ -325,7 +325,7 @@ export const decidirRequerimiento = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-       <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decisionFrase}</strong>.</p>
       <p style="margin-top: 20px;">
   Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz.
   <br>
