@@ -194,10 +194,10 @@ return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud.
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
-  let { token, decision } = req.body;
+  var { token, decision } = req.body;
 
   // Modificar la palabra "aprobado" y "rechazado" por otras frases
-  let decisionFrase;
+  var decisionFrase;
   if (decision === 'aprobado') {
     decisionFrase = 'ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
   } else if (decision === 'rechazado') {
