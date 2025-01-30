@@ -42,24 +42,24 @@ export const crearRequerimiento = async (req, res) => {
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
 
-    
+
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
-      .insert([{ 
-        nombre_completo, 
+      .insert([{
+        nombre_completo,
         area,
         procesos,
         sede,
         unidad: unidadPgArray, // Formatear como array PostgreSQL
         centro_costos: centroCostosPgArray, // Formatear como array PostgreSQL
-        descripcion, 
+        descripcion,
         monto_estimado,
-        archivo_cotizacion: archivoCotizacionUrl, 
-        correo_empleado, 
-        token, 
-        estado: 'Pendiente' 
+        archivo_cotizacion: archivoCotizacionUrl,
+        correo_empleado,
+        token,
+        estado: 'Pendiente'
       }])
       .select();
 
@@ -168,29 +168,29 @@ export const crearRequerimiento = async (req, res) => {
 </html>
 `;
 
-const archivoAdjunto = {
-  filename: archivoCotizacion.originalname,
-  content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
-  encoding: 'base64', // Se codifica el archivo como base64
-};
+    const archivoAdjunto = {
+      filename: archivoCotizacion.originalname,
+      content: archivoCotizacion.buffer, // Enviamos el contenido del archivo
+      encoding: 'base64', // Se codifica el archivo como base64
+    };
 
-// Enviar el correo con el archivo adjunto
-await sendEmail(
-  'desarrollo@merkahorrosas.com', // Correo del encargado
-  'Nuevo Requerimiento de Gasto',
-  mensajeEncargado,
-  [archivoAdjunto] // Adjuntamos el archivo
-);
+    // Enviar el correo con el archivo adjunto
+    await sendEmail(
+      'desarrollo@merkahorrosas.com', // Correo del encargado
+      'Nuevo Requerimiento de Gasto',
+      mensajeEncargado,
+      [archivoAdjunto] // Adjuntamos el archivo
+    );
 
-// Responder al cliente con un objeto JSON con el mensaje de éxito
-return res.status(201).json({
-  message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-  token, // Devuelve el token generado
-});
-} catch (error) {
-console.error("❌ Error en la creación del requerimiento:", error);
-return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
-}
+    // Responder al cliente con un objeto JSON con el mensaje de éxito
+    return res.status(201).json({
+      message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
+      token, // Devuelve el token generado
+    });
+  } catch (error) {
+    console.error("❌ Error en la creación del requerimiento:", error);
+    return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud." });
+  }
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
@@ -229,9 +229,15 @@ export const actualizarEstado = async (req, res) => {
   </head>
   <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-      <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
+      <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
       <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>
+        ${decision.toLowerCase() === 'aprobada'
+        ? 'Tu necesidad de conciencia del gasto ha sido considerada necesaria para continuar con el fortalecimiento del proceso.'
+        : 'Tu necesidad de conciencia del gasto no la hemos considerado necesaria para el objetivo que nos planteas.'
+      }
+      </p>
       <p>Si tienes alguna duda, por favor, contáctanos.</p>
       <p style="margin-top: 20px;">Saludos cordiales,</p>
       <p>El equipo de gestión de gastos<br>Merkahorro</p>
@@ -314,12 +320,18 @@ export const decidirRequerimiento = async (req, res) => {
   </head>
   <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-      <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
+      <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
       <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
-      <p>Si tienes alguna duda, por favor, contáctanos.</p>
-      <p style="margin-top: 20px;">Saludos cordiales,</p>
-      <p>El equipo de gestión de gastos<br>Merkahorro</p>
+      <p>
+        ${decision.toLowerCase() === 'aprobada'
+        ? 'Tu necesidad de conciencia del gasto ha sido considerada necesaria para continuar con el fortalecimiento del proceso.'
+        : 'Tu necesidad de conciencia del gasto no la hemos considerado necesaria para el objetivo que nos planteas.'
+      }
+      </p>
+      <p>
+      Procura que todo aquel que llegue a ti, salga de tus manos mejor y mas feliz.Author madre teresa de calcuta
+      </p>
     </div>
   </body>
 </html>
