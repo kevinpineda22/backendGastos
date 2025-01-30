@@ -194,14 +194,7 @@ return res.status(500).json({ error: "Hubo un problema al procesar tu solicitud.
 };
 // ✅ Aprobar o rechazar requerimiento
 export const actualizarEstado = async (req, res) => {
-  let { token, decision } = req.body;
-
-  // Modificar la palabra "aprobado" y "rechazado" por otras frases
-  if (decision === 'aprobado') {
-    decision = '  ha sido considerada necesaria para continuar con el fortalecimiento del proceso';
-  } else if (decision === 'rechazado') {
-    decision = 'no la hemos considerado necesaria para el objetivo que nos planteas.'; 
-  }
+  const { token, decision } = req.body;
 
   try {
     // Obtener el correo del solicitante a partir del token
@@ -238,7 +231,7 @@ export const actualizarEstado = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-      <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
       <p>Si tienes alguna duda, por favor, contáctanos.</p>
       <p style="margin-top: 20px;">Saludos cordiales,</p>
       <p>El equipo de gestión de gastos<br>Merkahorro</p>
@@ -323,7 +316,7 @@ export const decidirRequerimiento = async (req, res) => {
     <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
       <h2 style="color: #210d65;">Decisión sobre tu Requerimiento de Gasto</h2>
       <p>Estimado ${data.nombre_completo},</p>
-       <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" <strong>${decision.toLowerCase()}</strong>.</p>
+      <p>Tu requerimiento de gasto con la descripción "<strong>${data.descripcion}</strong>" ha sido <strong>${decision.toLowerCase()}</strong>.</p>
       <p>Si tienes alguna duda, por favor, contáctanos.</p>
       <p style="margin-top: 20px;">Saludos cordiales,</p>
       <p>El equipo de gestión de gastos<br>Merkahorro</p>
