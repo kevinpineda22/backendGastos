@@ -174,7 +174,12 @@ export const crearRequerimiento = async (req, res) => {
               <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(
                 token
               )}" class="button">Aprobar/Rechazar</a>
-              <p style="margin-top: 30px;">Saludos cordiales,<br>El equipo de gestión de gastos<br>Merkahorro</p>
+
+               <div style="padding: 10px; font-style: italic;">
+    <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+    <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+</div>
+              
             </td>
           </tr>
         </table>
@@ -276,11 +281,9 @@ export const actualizarEstado = async (req, res) => {
       .json({ message: `Requerimiento ${decision} correctamente` });
   } catch (error) {
     console.error("❌ Error en la actualización del estado:", error);
-    return res
-      .status(500)
-      .json({
-        error: "Hubo un problema al procesar la actualización del estado.",
-      });
+    return res.status(500).json({
+      error: "Hubo un problema al procesar la actualización del estado.",
+    });
   }
 };
 
@@ -372,10 +375,8 @@ export const decidirRequerimiento = async (req, res) => {
       .json({ message: `Requerimiento ${decision} correctamente` });
   } catch (error) {
     console.error("❌ Error en la actualización del estado:", error);
-    return res
-      .status(500)
-      .json({
-        error: "Hubo un problema al procesar la actualización del estado.",
-      });
+    return res.status(500).json({
+      error: "Hubo un problema al procesar la actualización del estado.",
+    });
   }
 };
