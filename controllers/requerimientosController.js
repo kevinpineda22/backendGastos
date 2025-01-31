@@ -347,9 +347,9 @@ export const decidirRequerimiento = async (req, res) => {
       <p>Estimado ${data.nombre_completo},</p>
       <p>Tu necesidad de conciencia del gasto "<strong>${
         data.descripcion
-      }</strong>" ha sido considerada<strong>${decision.toLowerCase()}</strong>para continuar con el fortalecimiento del proceso..</p>br
+      }</strong>" ha sido considerada <strong>${decision.toLowerCase()} </strong> para continuar con el fortalecimiento del proceso..</p>
 
-     <div style="border-left: 4px solid #007bff; padding: 10px; font-style: italic;">
+     <div style="border-left: 4px solid; padding: 10px; font-style: italic;">
     <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
     <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
 </div>
