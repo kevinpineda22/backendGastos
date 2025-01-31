@@ -54,12 +54,12 @@ export const crearRequerimiento = async (req, res) => {
           .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
             contentType: archivo.mimetype,
           });
-    
+
         if (uploadError) {
           console.error('❌ Error al subir el archivo del proveedor a Supabase:', uploadError);
           return res.status(500).json({ error: uploadError.message });
         }
-    
+
         const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
         archivosProveedorUrls.push(archivoUrl);
       }
@@ -194,7 +194,10 @@ export const crearRequerimiento = async (req, res) => {
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
               <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
-              <p style="margin-top: 30px;">Saludos cordiales,<br>El equipo de gestión de gastos<br>Merkahorro</p>
+               <div style="padding: 10px; font-style: italic;">
+         <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+         <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+     </div>
             </td>
           </tr>
         </table>
@@ -204,17 +207,17 @@ export const crearRequerimiento = async (req, res) => {
 </body>
 </html>
 `;
-    
+
     // Crear el array de archivos adjuntos
     const archivoAdjunto = [];
-    
+
     // 1. Agregar el archivo de la cotización (es obligatorio)
     archivoAdjunto.push({
       filename: archivoCotizacion.originalname,
       content: archivoCotizacion.buffer, // Enviamos el contenido del archivo de cotización
       encoding: 'base64',
     });
-    
+
     // 2. Agregar los archivos del proveedor como enlaces (si existe)
     if (archivosProveedor && archivosProveedor.length > 0) {
       archivosProveedor.forEach((archivo) => {
@@ -225,7 +228,7 @@ export const crearRequerimiento = async (req, res) => {
         });
       });
     }
-    
+
     // Enviar el correo con los archivos adjuntos
     await sendEmail(
       'desarrollo@merkahorrosas.com', // Correo del encargado
@@ -233,7 +236,7 @@ export const crearRequerimiento = async (req, res) => {
       mensajeEncargado,
       archivoAdjunto // Pasa el array directamente
     );
-    
+
     // Respuesta exitosa
     res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
 
@@ -361,8 +364,8 @@ export const decidirRequerimiento = async (req, res) => {
       return res.status(500).json({ error: updateError.message });
     }
 
-     // Correo para el solicitante (texto plano)
-     const mensajeSolicitante = `
+    // Correo para el solicitante (texto plano)
+    const mensajeSolicitante = `
      <html>
        <head>
          <meta charset="UTF-8">
@@ -372,9 +375,8 @@ export const decidirRequerimiento = async (req, res) => {
          <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
            <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
            <p>Estimado ${data.nombre_completo},</p>
-           <p>Tu necesidad de conciencia del gasto "<strong>${
-             data.descripcion
-           }</strong>" ha sido considerada <strong>${decision.toLowerCase()} </strong> para el objetivo que nos planteas.</p>
+           <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion
+      }</strong>" ha sido considerada <strong>${decision.toLowerCase()} </strong> para el objetivo que nos planteas.</p>
      
           <div style="padding: 10px; font-style: italic;">
          <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
