@@ -169,7 +169,7 @@ export const crearRequerimiento = async (req, res) => {
                   <td>${procesos}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight: bold;">Centro de Operaciones:</td>
+                  <td style="font-weight: bold;">sedes:</td>
                   <td>${sedesArray.join(', ')}</td>
                 </tr>
                 <tr>
