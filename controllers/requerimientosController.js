@@ -316,6 +316,31 @@ export const actualizarEstado = async (req, res) => {
   }
 };
 
+
+
+// Función para obtener el historial de gastos
+export const obtenerHistorialGastos = async (req, res) => {
+  const { correo_empleado } = req.query; // Obtener el correo del query params
+
+  try {
+    const { data, error } = await supabase
+      .from('Gastos')
+      .select('*')
+      .eq('correo_empleado', correo_empleado) // Filtrar por correo
+      .order('fecha_creacion', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error al obtener el historial de gastos:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('❌ Error al obtener el historial de gastos:', error);
+    return res.status(500).json({ error: 'Hubo un problema al obtener el historial de gastos.' });
+  }
+};
+
 // ✅ Consultar requerimientos
 export const obtenerRequerimientos = async (req, res) => {
   try {
