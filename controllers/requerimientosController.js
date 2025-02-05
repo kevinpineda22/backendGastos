@@ -334,6 +334,7 @@ export const obtenerHistorialGastos = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
+    console.log('✅ Historial de gastos obtenido:', data); // Agrega este log
     return res.status(200).json(data);
   } catch (error) {
     console.error('❌ Error al obtener el historial de gastos:', error);
