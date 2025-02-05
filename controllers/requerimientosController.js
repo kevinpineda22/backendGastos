@@ -68,10 +68,13 @@ export const crearRequerimiento = async (req, res) => {
     // Asegurarse de que unidad y centro_costos sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
     const centroCostosArray = Array.isArray(centro_costos) ? centro_costos : [centro_costos];
+    const sedesArray = Array.isArray(sede) ? sede : [sede];
+
 
     // Convertir los arrays a formato PostgreSQL
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
+    const sedesPgArray = `{${sedesArray.map(item => `"${item}"`).join(',')}}`;
 
     // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
@@ -80,7 +83,7 @@ export const crearRequerimiento = async (req, res) => {
         nombre_completo,
         area,
         procesos,
-        sede,
+        sede: sedesPgArray,
         unidad: unidadPgArray,
         centro_costos: centroCostosPgArray,
         descripcion,
@@ -167,7 +170,7 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Centro de Operaciones:</td>
-                  <td>${sede}</td>
+                  <td>${sedesArray.join(', ')}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Unidad de Negocio:</td>
