@@ -186,7 +186,7 @@ export const crearRequerimiento = async (req, res) => {
                   <td>$${monto_estimado}</td>
                 </tr>
                   <tr>
-                  <td style="font-weight: bold;">Monto Estimado:</td>
+                  <td style="font-weight: bold;">Monto por sede:</td>
                   <td>$${monto_sede}</td>
                 </tr>
                 <tr>
