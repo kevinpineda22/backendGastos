@@ -8,7 +8,7 @@ const upload = multer({ storage });
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado } = req.body;
+  const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado, monto_sede } = req.body;
   const archivoCotizacion = req.files['archivo_cotizacion'] ? req.files['archivo_cotizacion'][0] : null;
   const archivosProveedor = req.files['archivos_proveedor'] || [];
 
@@ -88,6 +88,7 @@ export const crearRequerimiento = async (req, res) => {
         centro_costos: centroCostosPgArray,
         descripcion,
         monto_estimado,
+        monto_sede,
         archivo_cotizacion: archivoCotizacionUrl,
         archivos_proveedor: archivosProveedorUrls,  // Guardar las URLs de los archivos de proveedores
         correo_empleado,
@@ -178,11 +179,15 @@ export const crearRequerimiento = async (req, res) => {
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Centro de Costos:</td>
-                  <td>${centroCostosArray.join(', ')}</td>
+                  <td>${centroCostosArray.join(', ')}</td>monto_sede
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Monto Estimado:</td>
                   <td>$${monto_estimado}</td>
+                </tr>
+                  <tr>
+                  <td style="font-weight: bold;">Monto Estimado:</td>
+                  <td>$${monto_sede}</td>
                 </tr>
                 <tr>
                   <td style="font-weight: bold;">Cotización:</td>
