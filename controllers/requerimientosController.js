@@ -239,7 +239,7 @@ export const crearRequerimiento = async (req, res) => {
 
     // Enviar el correo con los archivos adjuntos
     await sendEmail(
-      'desarrollo@merkahorrosas.com', // Correo del encargado
+      'operaciones@merkahorrosas.com', // Correo del encargado
       'Nuevo Requerimiento de Gasto',
       mensajeEncargado,
       archivoAdjunto // Pasa el array directamente
