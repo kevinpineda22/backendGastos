@@ -388,7 +388,7 @@ export const obtenerRequerimientos = async (req, res) => {
 
 // ✅ Página para aprobar o rechazar requerimiento (Este es el endpoint que se llama desde el correo)
 export const decidirRequerimiento = async (req, res) => {
-  const { token, decision } = req.body;
+  const { token, decision, observacion } = req.body;
 
   try {
     // Obtener el requerimiento con el token proporcionado
@@ -416,7 +416,7 @@ export const decidirRequerimiento = async (req, res) => {
 
     // Correo para el solicitante (texto plano)
     const mensajeSolicitante = `
-     <html>
+         <html>
        <head>
          <meta charset="UTF-8">
          <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -425,13 +425,13 @@ export const decidirRequerimiento = async (req, res) => {
          <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
            <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
            <p>Estimado ${data.nombre_completo},</p>
-           <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion
-      }</strong>" ha sido considerada <strong>${decision.toLowerCase()} </strong> para el objetivo que nos planteas.</p>
-     
-          <div style="padding: 10px; font-style: italic;">
-         <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-         <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-     </div>
+           <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
+           <p><strong>Observación:</strong> ${observacion || 'Sin observaciones.'}</p>
+
+           <div style="padding: 10px; font-style: italic;">
+             <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+             <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+           </div>
          </div>
        </body>
      </html>
