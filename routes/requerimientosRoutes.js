@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearRequerimiento, actualizarEstado, obtenerRequerimientos, decidirRequerimiento, obtenerHistorialGastos } from '../controllers/requerimientosController.js';
+import { crearRequerimiento, obtenerRequerimientos, decidirRequerimiento, obtenerHistorialGastos } from '../controllers/requerimientosController.js';
 import multer from 'multer';
 
 const router = express.Router();
@@ -15,7 +15,7 @@ router.post('/crear', upload.fields(
   ), crearRequerimiento);
   
 // Otras rutas
-router.post('/actualizarEstado', actualizarEstado);
+
 router.get('/obtenerRequerimientos', obtenerRequerimientos);
 router.post('/decidirRequerimiento', decidirRequerimiento);
 // Ruta para obtener el historial de gastos
