@@ -8,14 +8,27 @@ const upload = multer({ storage });
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
-  const { nombre_completo, area, procesos, sede, unidad, centro_costos, descripcion, monto_estimado, correo_empleado, monto_sede } = req.body;
-  const archivoCotizacion = req.files['archivo_cotizacion'] ? req.files['archivo_cotizacion'][0] : null;
+  const {
+    nombre_completo,
+    area,
+    procesos,
+    sede,
+    unidad,
+    centro_costos,
+    descripcion,
+    monto_estimado,
+    correo_empleado,
+    monto_sede
+  } = req.body;
+  
+  const archivoCotizacion = req.files['archivo_cotizacion']
+    ? req.files['archivo_cotizacion'][0]
+    : null;
   const archivosProveedor = req.files['archivos_proveedor'] || [];
 
-  // Verificar que el correo del solicitante se reciba correctamente
   console.log("Correo del solicitante recibido:", correo_empleado);
 
-  // Verifica que el archivo de cotización esté presente
+  // Verificar que el archivo de cotización esté presente
   if (!archivoCotizacion) {
     return res.status(400).json({ error: 'El archivo de cotización es obligatorio.' });
   }
@@ -24,7 +37,7 @@ export const crearRequerimiento = async (req, res) => {
   const token = crypto.randomBytes(16).toString('hex');
 
   try {
-    // Subir el archivo PDF de cotización al bucket de Supabase
+    // Subir el archivo PDF de cotización a Supabase
     let archivoCotizacionUrl = '';
     if (archivoCotizacion) {
       const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
@@ -50,7 +63,7 @@ export const crearRequerimiento = async (req, res) => {
         const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
         const { data: uploadData, error: uploadError } = await supabase
           .storage
-          .from('cotizaciones')  // El bucket que estás usando
+          .from('cotizaciones')
           .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
             contentType: archivo.mimetype,
           });
@@ -65,11 +78,10 @@ export const crearRequerimiento = async (req, res) => {
       }
     }
 
-    // Asegurarse de que unidad y centro_costos sean arrays
+    // Asegurarse de que unidad, centro_costos y sede sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
     const centroCostosArray = Array.isArray(centro_costos) ? centro_costos : [centro_costos];
     const sedesArray = Array.isArray(sede) ? sede : [sede];
-
 
     // Convertir los arrays a formato PostgreSQL
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
@@ -90,7 +102,7 @@ export const crearRequerimiento = async (req, res) => {
         monto_estimado,
         monto_sede,
         archivo_cotizacion: archivoCotizacionUrl,
-        archivos_proveedor: archivosProveedorUrls,  // Guardar las URLs de los archivos de proveedores
+        archivos_proveedor: archivosProveedorUrls,
         correo_empleado,
         token,
         estado: 'Pendiente'
@@ -102,129 +114,133 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
+    // Determinar el destinatario según el remitente:
+    // Si es "juanmerkahorro@gmail.com" se envía a "desarrollo@merkahorrosas.com",
+    // de lo contrario, a "operaciones@merkahorrosas.com"
+    const destinatarioEncargado = correo_empleado === 'juanmerkahorro@gmail.com'
+      ? 'desarrollo@merkahorrosas.com'
+      : 'operaciones@merkahorrosas.com';
 
-    // Correo para el encargado en texto plano
+    // Preparar el mensaje HTML para el encargado
     const mensajeEncargado = `
-   <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-    table {
-      width: 100%;
-      border-spacing: 0;
-      background-color: #ffffff;
-    }
-    td {
-      padding: 15px;
-    }
-    h2 {
-      font-size: 24px;
-      color:rgb(255, 255, 255);
-    }
-    .button {
-      background-color: #210d65;
-      color: white;
-      padding: 10px 20px;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-  </style>
-</head>
-<body>
-  <table cellpadding="0" cellspacing="0">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
-          <tr>
-            <td style="text-align: center; background-color: #210d65; color: white;">
-              <h2>Nuevo Requerimiento de Gasto</h2>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p>Estimado encargado,</p>
-              <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
-              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                <tr>
-                  <td style="font-weight: bold;">Nombre Completo:</td>
-                  <td>${nombre_completo}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Área:</td>
-                  <td>${area}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Descripción:</td>
-                  <td>${descripcion}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Procesos:</td>
-                  <td>${procesos}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">sedes:</td>
-                  <td>${sedesArray.join(', ')}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Unidad de Negocio:</td>
-                  <td>${unidadArray.join(', ')}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Centro de Costos:</td>
-                  <td>${centroCostosArray.join(', ')}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Monto Estimado:</td>
-                  <td>$${monto_estimado}</td>
-                </tr>
-                  <tr>
-                  <td style="font-weight: bold;">Monto por sede:</td>
-                  <td>$${monto_sede}</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Cotización:</td>
-                  <td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
-                </tr>
-                <tr>
-                  <td style="font-weight: bold;">Archivos del Proveedor:</td>
-                  <td>
-                    ${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}
-                  </td>
-                </tr>
-              </table>
-              <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
-               <div style="padding: 10px; font-style: italic;">
-         <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-         <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-     </div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`;
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+        }
+        table {
+          width: 100%;
+          border-spacing: 0;
+          background-color: #ffffff;
+        }
+        td {
+          padding: 15px;
+        }
+        h2 {
+          font-size: 24px;
+          color: rgb(255, 255, 255);
+        }
+        .button {
+          background-color: #210d65;
+          color: white;
+          padding: 10px 20px;
+          text-decoration: none;
+          border-radius: 5px;
+        }
+      </style>
+    </head>
+    <body>
+      <table cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
+              <tr>
+                <td style="text-align: center; background-color: #210d65; color: white;">
+                  <h2>Nuevo Requerimiento de Gasto</h2>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>Estimado encargado,</p>
+                  <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
+                  <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
+                    <tr>
+                      <td style="font-weight: bold;">Nombre Completo:</td>
+                      <td>${nombre_completo}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Área:</td>
+                      <td>${area}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Descripción:</td>
+                      <td>${descripcion}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Procesos:</td>
+                      <td>${procesos}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Sedes:</td>
+                      <td>${sedesArray.join(', ')}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Unidad de Negocio:</td>
+                      <td>${unidadArray.join(', ')}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Centro de Costos:</td>
+                      <td>${centroCostosArray.join(', ')}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Monto Estimado:</td>
+                      <td>$${monto_estimado}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Monto por sede:</td>
+                      <td>$${monto_sede}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Cotización:</td>
+                      <td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: bold;">Archivos del Proveedor:</td>
+                      <td>
+                        ${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}
+                      </td>
+                    </tr>
+                  </table>
+                  <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
+                  <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
+                  <div style="padding: 10px; font-style: italic;">
+                    <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+                    <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    `;
 
-    // Crear el array de archivos adjuntos
-    const archivoAdjunto = [];
-
-    // 1. Agregar el archivo de la cotización (es obligatorio)
-    archivoAdjunto.push({
-      filename: archivoCotizacion.originalname,
-      content: archivoCotizacion.buffer, // Enviamos el contenido del archivo de cotización
-      encoding: 'base64',
-    });
+   // Crear el array de archivos adjuntos
+   const archivoAdjunto = [];
+   archivoAdjunto.push({
+     filename: archivoCotizacion.originalname,
+     content: archivoCotizacion.buffer,
+     encoding: 'base64',
+   });
 
     // 2. Agregar los archivos del proveedor como enlaces (si existe)
     if (archivosProveedor && archivosProveedor.length > 0) {
@@ -237,13 +253,13 @@ export const crearRequerimiento = async (req, res) => {
       });
     }
 
-    // Enviar el correo con los archivos adjuntos
-    await sendEmail(
-      'operaciones@merkahorrosas.com', // Correo del encargado
-      'Nuevo Requerimiento de Gasto',
-      mensajeEncargado,
-      archivoAdjunto // Pasa el array directamente
-    );
+      // Enviar el correo utilizando el destinatario determinado
+      await sendEmail(
+        destinatarioEncargado,
+        'Nuevo Requerimiento de Gasto',
+        mensajeEncargado,
+        archivoAdjunto
+      );
 
     // Respuesta exitosa
     res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
