@@ -389,9 +389,10 @@ export const obtenerRequerimientos = async (req, res) => {
 // ✅ Página para aprobar o rechazar requerimiento (Este es el endpoint que se llama desde el correo)
 export const decidirRequerimiento = async (req, res) => {
   const { token, decision, observacion } = req.body;
+  
+  console.log('Datos recibidos:', { token, decision, observacion });  // Verifica que el backend recibe todo bien
 
   try {
-    // Obtener el requerimiento con el token proporcionado
     const { data, error } = await supabase
       .from('Gastos')
       .select('*')
@@ -403,17 +404,18 @@ export const decidirRequerimiento = async (req, res) => {
       return res.status(404).json({ error: 'Requerimiento no encontrado' });
     }
 
-    // Actualizar el estado del requerimiento en la base de datos
     const { error: updateError } = await supabase
       .from('Gastos')
-      .update({ estado: decision })
+      .update({
+        estado: decision,
+        observacion: observacion  // Asegúrate que el campo se actualiza correctamente
+      })
       .eq('token', token);
 
     if (updateError) {
-      console.error('❌ Error al actualizar estado:', updateError);
+      console.error('❌ Error al actualizar estado y observación:', updateError);
       return res.status(500).json({ error: updateError.message });
     }
-
     // Correo para el solicitante (texto plano)
     const mensajeSolicitante = `
          <html>
@@ -446,7 +448,7 @@ export const decidirRequerimiento = async (req, res) => {
     );
 
     // Responder al cliente con el mensaje de éxito
-    return res.status(200).json({ message: `Requerimiento ${decision} correctamente` });
+    return res.status(200).json({ message: `Requerimiento ${decision} y observación guardados correctamente.` });
   } catch (error) {
     console.error('❌ Error en la actualización del estado:', error);
     return res.status(500).json({ error: 'Hubo un problema al procesar la actualización del estado.' });
