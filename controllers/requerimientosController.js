@@ -1,4 +1,3 @@
-
 import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
@@ -6,6 +5,12 @@ import multer from 'multer';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+// Función para sanitizar el nombre del archivo, eliminando caracteres especiales no permitidos
+const sanitizeFileName = (fileName) => {
+  // Se eliminan caracteres que no sean letras, números, guion, guion bajo o punto
+  return fileName.replace(/[^\w.-]/g, '');
+};
 
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
@@ -41,7 +46,7 @@ export const crearRequerimiento = async (req, res) => {
     // Subir el archivo PDF de cotización a Supabase
     let archivoCotizacionUrl = '';
     if (archivoCotizacion) {
-      const uniqueFileName = `${Date.now()}_${archivoCotizacion.originalname}`;
+      const uniqueFileName = `${Date.now()}_${sanitizeFileName(archivoCotizacion.originalname)}`;
       const { data: uploadData, error: uploadError } = await supabase
         .storage
         .from('cotizaciones')
@@ -61,7 +66,7 @@ export const crearRequerimiento = async (req, res) => {
     let archivosProveedorUrls = [];
     if (archivosProveedor && archivosProveedor.length > 0) {
       for (let archivo of archivosProveedor) {
-        const uniqueFileName = `${Date.now()}_${archivo.originalname}`;
+        const uniqueFileName = `${Date.now()}_${sanitizeFileName(archivo.originalname)}`;
         const { data: uploadData, error: uploadError } = await supabase
           .storage
           .from('cotizaciones')
@@ -235,15 +240,15 @@ export const crearRequerimiento = async (req, res) => {
     </html>
     `;
 
-   // Crear el array de archivos adjuntos
-   const archivoAdjunto = [];
-   archivoAdjunto.push({
-     filename: archivoCotizacion.originalname,
-     content: archivoCotizacion.buffer,
-     encoding: 'base64',
-   });
+    // Crear el array de archivos adjuntos
+    const archivoAdjunto = [];
+    archivoAdjunto.push({
+      filename: archivoCotizacion.originalname,
+      content: archivoCotizacion.buffer,
+      encoding: 'base64',
+    });
 
-    // 2. Agregar los archivos del proveedor como enlaces (si existe)
+    // Agregar los archivos del proveedor al array de archivos adjuntos (si existen)
     if (archivosProveedor && archivosProveedor.length > 0) {
       archivosProveedor.forEach((archivo) => {
         archivoAdjunto.push({
@@ -254,22 +259,18 @@ export const crearRequerimiento = async (req, res) => {
       });
     }
 
-      // Enviar el correo utilizando el destinatario determinado
-      await sendEmail(
-        destinatarioEncargado,
-        'Nuevo Requerimiento de Gasto',
-        mensajeEncargado,
-        archivoAdjunto
-      );
+    // Enviar el correo utilizando el destinatario determinado
+    await sendEmail(
+      destinatarioEncargado,
+      'Nuevo Requerimiento de Gasto',
+      mensajeEncargado,
+      archivoAdjunto
+    );
 
-    // Respuesta exitosa
-    res.status(200).json({ message: 'Requerimiento creado y correo enviado correctamente.' });
-
-
-    // Responder al cliente con un objeto JSON con el mensaje de éxito
+    // Responder al cliente con un objeto JSON con el mensaje de éxito y token
     return res.status(201).json({
       message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
-      token, // Devuelve el token generado
+      token,
     });
   } catch (error) {
     console.error("❌ Error en la creación del requerimiento:", error);
@@ -293,7 +294,7 @@ export const obtenerHistorialGastos = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log('✅ Historial de gastos obtenido:', data); // Agrega este log
+    console.log('✅ Historial de gastos obtenido:', data);
     return res.status(200).json(data);
   } catch (error) {
     console.error('❌ Error al obtener el historial de gastos:', error);
@@ -325,7 +326,7 @@ export const obtenerRequerimientos = async (req, res) => {
 export const decidirRequerimiento = async (req, res) => {
   const { token, decision, observacion } = req.body;
 
-  console.log('Datos recibidos:', { token, decision, observacion });  // Verifica que el backend recibe todo bien
+  console.log('Datos recibidos:', { token, decision, observacion });
 
   try {
     const { data, error } = await supabase
@@ -343,7 +344,7 @@ export const decidirRequerimiento = async (req, res) => {
       .from('Gastos')
       .update({
         estado: decision,
-        observacion: observacion  // Asegúrate que el campo se actualiza correctamente
+        observacion: observacion
       })
       .eq('token', token);
 
@@ -351,39 +352,39 @@ export const decidirRequerimiento = async (req, res) => {
       console.error('❌ Error al actualizar estado y observación:', updateError);
       return res.status(500).json({ error: updateError.message });
     }
-    // Correo para el solicitante (texto plano)
+
     const mensajeSolicitante = `
-         <html>
-       <head>
-         <meta charset="UTF-8">
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       </head>
-       <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-         <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-           <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
-           <p>Estimado ${data.nombre_completo},</p>
-           <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
-           <p><strong>Observación:</strong> ${observacion || 'Sin observaciones.'}</p>
-           <div style="padding: 10px; font-style: italic;">
-             <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-             <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-           </div>
-         </div>
-       </body>
-     </html>
-     `;
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
+          <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
+          <p>Estimado ${data.nombre_completo},</p>
+          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
+          <p><strong>Observación:</strong> ${observacion || 'Sin observaciones.'}</p>
+          <div style="padding: 10px; font-style: italic;">
+            <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+            <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
     const correoSolicitante = data.correo_empleado;
 
     await sendEmail(
-      correoSolicitante, // Correo del solicitante
+      correoSolicitante,
       'Decisión sobre tu requerimiento de gasto',
       mensajeSolicitante
     );
 
-    // Responder al cliente con el mensaje de éxito
     return res.status(200).json({ message: `Requerimiento ${decision} y observación guardados correctamente.` });
   } catch (error) {
     console.error('❌ Error en la actualización del estado:', error);
     return res.status(500).json({ error: 'Hubo un problema al procesar la actualización del estado.' });
-  }}
+  }
+};
