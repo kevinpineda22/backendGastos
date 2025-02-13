@@ -18,7 +18,7 @@ router.post('/crear', upload.fields(
 
 router.post('/decidirRequerimiento', decidirRequerimiento);
 
-router.put('/requerimientos/:id', actualizarRequerimiento);
+router.put('/:id', actualizarRequerimiento);
 
 router.get('/obtenerRequerimientos', obtenerRequerimientos);
 router.get('/historial', obtenerHistorialGastos);
