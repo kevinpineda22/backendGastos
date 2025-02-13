@@ -322,6 +322,28 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
+export const actualizarRequerimiento = async (req, res) => {
+  const { id } = req.params;
+  const { estado, observacion } = req.body;  // Ajusta si usas "observacion_anny"
+
+  try {
+    // Actualizamos los campos "estado" y "observacion" para el registro con el id dado
+    const { data, error } = await supabase
+      .from('requerimientos') // Asegúrate de usar el nombre correcto de la tabla (por ejemplo, "requerimientos" o "gastos")
+      .update({ estado, observacion })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al actualizar requerimiento:', error);
+      return res.status(500).json({ error: error.message });
+    }
+    return res.status(200).json({ message: 'Registro actualizado correctamente', data });
+  } catch (err) {
+    console.error('Error en actualizarRequerimiento:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 // ✅ Página para aprobar o rechazar requerimiento (Este es el endpoint que se llama desde el correo)
 export const decidirRequerimiento = async (req, res) => {
   const { token, decision, observacion } = req.body;
