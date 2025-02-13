@@ -332,7 +332,7 @@ export const actualizarRequerimiento = async (req, res) => {
   try {
     // Actualizamos los campos "estado" y "observacion" para el registro con el id dado
     const { data, error } = await supabase
-      .from('requerimientos') // Asegúrate de usar el nombre correcto de la tabla (por ejemplo, "requerimientos" o "gastos")
+      .from('Gastos') // Asegúrate de usar el nombre correcto de la tabla (por ejemplo, "requerimientos" o "gastos")
       .update({ estado, observacion })
       .eq('id', id);
 
