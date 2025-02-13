@@ -15,7 +15,7 @@ const sanitizeFileName = (fileName) => {
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
   const {
-    fecha,
+    
     nombre_completo,
     area,
     procesos,
@@ -99,7 +99,7 @@ export const crearRequerimiento = async (req, res) => {
     const { data, error } = await supabase
       .from('Gastos')
       .insert([{
-        fecha,
+        
         nombre_completo,
         area,
         procesos,
@@ -179,10 +179,7 @@ export const crearRequerimiento = async (req, res) => {
                   <p>Estimado encargado,</p>
                   <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
                   <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                      <td style="font-weight: bold;">Fecha:</td>
-                      <td>${fecha}</td>
-                    </tr>
+                  
                     <tr>
                       <td style="font-weight: bold;">Nombre Completo:</td>
                       <td>${nombre_completo}</td>
