@@ -327,31 +327,29 @@ export const obtenerRequerimientos = async (req, res) => {
 
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  // Usamos todos los campos enviados en el body, incluyendo verificado, estado y observacion
-  const updatedFields = req.body;
-  
+  const { estado, observacion, verificado } = req.body; // <-- Asegúrate de extraer verificado
+
   console.log("Actualizando registro con ID:", id);
-  console.log("Datos recibidos:", updatedFields);
+  console.log("Datos recibidos:", { estado, observacion, verificado });
 
   try {
     const { data, error } = await supabase
-      .from('Gastos') // Asegúrate de que este sea el nombre correcto de tu tabla
-      .update(updatedFields)
+      .from('Gastos')
+      .update({ estado, observacion, verificado })
       .eq('id', id);
 
     console.log("Resultado del update:", { data, error });
-    
+
     if (error) {
-      console.error("Error al actualizar registro:", error);
+      console.error("Error al actualizar requerimiento:", error);
       return res.status(500).json({ error: error.message || "Error desconocido" });
     }
 
     if (!data || data.length === 0) {
-      console.error("Registro no encontrado para actualizar.");
-      return res.status(404).json({ error: "Registro no encontrado" });
+      console.warn("No se retornaron filas actualizadas; se asume éxito.");
     }
 
-    return res.status(200).json({ message: "Registro actualizado correctamente", data });
+    return res.status(200).json({ message: "Registro actualizado correctamente", data: data || [] });
   } catch (err) {
     console.error("Error en actualizarRequerimiento:", err);
     return res.status(500).json({ error: err.message });
