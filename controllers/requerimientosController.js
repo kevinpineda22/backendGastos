@@ -335,7 +335,7 @@ export const actualizarRequerimiento = async (req, res) => {
 
   try {
     const { data, error } = await supabase
-      .from('requerimientos') // Asegúrate de que este sea el nombre correcto de tu tabla
+      .from('Gastos') // Asegúrate de que este sea el nombre correcto de tu tabla
       .update(updatedFields)
       .eq('id', id);
 
