@@ -334,7 +334,7 @@ export const actualizarRequerimiento = async (req, res) => {
 
   try {
     const { data, error } = await supabase
-      .from('requerimientos')
+      .from('Gastos')
       .update({ estado, observacion })
       .eq('id', id);
 
