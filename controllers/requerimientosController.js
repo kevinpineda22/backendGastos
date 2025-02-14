@@ -327,22 +327,30 @@ export const obtenerRequerimientos = async (req, res) => {
 
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion } = req.body;  // Ajusta si usas "observacion_anny"
+  const { estado, observacion } = req.body; // Se esperan los campos "estado" y "observacion"
+
+  console.log("Actualizando registro con ID:", id);
+  console.log("Datos recibidos:", { estado, observacion });
 
   try {
-    // Actualizamos los campos "estado" y "observacion" para el registro con el id dado
     const { data, error } = await supabase
-      .from('Gastos') // Asegúrate de usar el nombre correcto de la tabla (por ejemplo, "requerimientos" o "gastos")
+      .from('Gastos') // Asegúrate de que este sea el nombre correcto de tu tabla
       .update({ estado, observacion })
       .eq('id', id);
 
     if (error) {
-      console.error('Error al actualizar requerimiento:', error);
-      return res.status(500).json({ error: error.message });
+      console.error("Error al actualizar requerimiento:", error);
+      return res.status(500).json({ error: error.message || "Error desconocido" });
     }
-    return res.status(200).json({ message: 'Registro actualizado correctamente', data });
+    
+    if (!data || data.length === 0) {
+      console.error("Registro no encontrado para actualizar.");
+      return res.status(404).json({ error: "Registro no encontrado" });
+    }
+    
+    return res.status(200).json({ message: "Registro actualizado correctamente", data });
   } catch (err) {
-    console.error('Error en actualizarRequerimiento:', err);
+    console.error("Error en actualizarRequerimiento:", err);
     return res.status(500).json({ error: err.message });
   }
 };
