@@ -327,15 +327,15 @@ export const obtenerRequerimientos = async (req, res) => {
 
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado } = req.body; // <-- Asegúrate de extraer verificado
+  const { estado, observacion, verificado,observacionC } = req.body; // <-- Asegúrate de extraer verificado
 
   console.log("Actualizando registro con ID:", id);
-  console.log("Datos recibidos:", { estado, observacion, verificado });
+  console.log("Datos recibidos:", { estado, observacion,observacionC, verificado });
 
   try {
     const { data, error } = await supabase
       .from('Gastos')
-      .update({ estado, observacion, verificado })
+      .update({ estado, observacion,observacionC, verificado })
       .eq('id', id);
 
     console.log("Resultado del update:", { data, error });
