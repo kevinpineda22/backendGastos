@@ -24,6 +24,8 @@ export const crearRequerimiento = async (req, res) => {
     centro_costos,
     descripcion,
     monto_estimado,
+    anticipo,
+    tiempo_fecha_pago,
     correo_empleado,
     monto_sede
   } = req.body;
@@ -109,6 +111,8 @@ export const crearRequerimiento = async (req, res) => {
         descripcion,
         monto_estimado,
         monto_sede,
+        anticipo,
+        tiempo_fecha_pago,
         archivo_cotizacion: archivoCotizacionUrl,
         archivos_proveedor: archivosProveedorUrls,
         correo_empleado,
@@ -215,6 +219,14 @@ export const crearRequerimiento = async (req, res) => {
                     <tr>
                       <td style="font-weight: bold;">Monto por sede:</td>
                       <td>$${monto_sede}</td>
+                    </tr>
+                     <tr>
+                      <td style="font-weight: bold;">Anticipo:</td>
+                      <td>$${anticipo}</td>
+                    </tr>
+                     <tr>
+                      <td style="font-weight: bold;">Fecha tiempo estimado de pago:</td>
+                      <td>$${tiempo_fecha_pago}</td>
                     </tr>
                     <tr>
                       <td style="font-weight: bold;">Cotización:</td>
