@@ -222,7 +222,7 @@ export const crearRequerimiento = async (req, res) => {
                     </tr>
                      <tr>
                       <td style="font-weight: bold;">Anticipo:</td>
-                      <td>$${anticipo}</td>
+                      <td>$${anticipo}</td> 
                     </tr>
                      <tr>
                       <td style="font-weight: bold;">Fecha tiempo estimado de pago:</td>
