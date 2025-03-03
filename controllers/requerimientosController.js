@@ -12,10 +12,19 @@ const sanitizeFileName = (fileName) => {
   return fileName.replace(/[^\w.-]/g, '');
 };
 
+// Mapeo de correos de empleados a su jefe
+const mapaEmpleadosJefes = {
+  'juanmerkahorro@gmail.com': 'desarrollo@merkahorrosas.com',
+  'johanmerkahorro777@gmail.com': 'desarrollo@merkahorrosas.com'
+};
+
+const obtenerJefePorEmpleado = (correo_empleado) => {
+  return mapaEmpleadosJefes[correo_empleado] || 'operaciones@merkahorrosas.com';
+};
+
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
   const {
-    
     nombre_completo,
     area,
     procesos,
@@ -101,7 +110,6 @@ export const crearRequerimiento = async (req, res) => {
     const { data, error } = await supabase
       .from('Gastos')
       .insert([{
-        
         nombre_completo,
         area,
         procesos,
@@ -126,12 +134,8 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    // Determinar el destinatario según el remitente:
-    // Si es "juanmerkahorro@gmail.com" se envía a "desarrollo@merkahorrosas.com",
-    // de lo contrario, a "operaciones@merkahorrosas.com"
-    const destinatarioEncargado = correo_empleado === 'juanmerkahorro@gmail.com'
-      ? 'desarrollo@merkahorrosas.com'
-      : 'operaciones@merkahorrosas.com';
+    // Determinar el destinatario según el remitente usando el mapeo
+    const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
 
     // Preparar el mensaje HTML para el encargado
     const mensajeEncargado = `
@@ -183,7 +187,6 @@ export const crearRequerimiento = async (req, res) => {
                   <p>Estimado encargado,</p>
                   <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
                   <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                  
                     <tr>
                       <td style="font-weight: bold;">Nombre Completo:</td>
                       <td>${nombre_completo}</td>
@@ -220,11 +223,11 @@ export const crearRequerimiento = async (req, res) => {
                       <td style="font-weight: bold;">Monto por sede:</td>
                       <td>$${monto_sede}</td>
                     </tr>
-                     <tr>
+                    <tr>
                       <td style="font-weight: bold;">Anticipo:</td>
                       <td>$${anticipo}</td> 
                     </tr>
-                     <tr>
+                    <tr>
                       <td style="font-weight: bold;">Fecha tiempo estimado de pago:</td>
                       <td>$${tiempo_fecha_pago}</td>
                     </tr>
@@ -339,15 +342,15 @@ export const obtenerRequerimientos = async (req, res) => {
 
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado,observacionC } = req.body; // <-- Asegúrate de extraer verificado
+  const { estado, observacion, verificado, observacionC } = req.body; // <-- Asegúrate de extraer verificado
 
   console.log("Actualizando registro con ID:", id);
-  console.log("Datos recibidos:", { estado, observacion,observacionC, verificado });
+  console.log("Datos recibidos:", { estado, observacion, observacionC, verificado });
 
   try {
     const { data, error } = await supabase
       .from('Gastos')
-      .update({ estado, observacion,observacionC, verificado })
+      .update({ estado, observacion, observacionC, verificado })
       .eq('id', id);
 
     console.log("Resultado del update:", { data, error });
