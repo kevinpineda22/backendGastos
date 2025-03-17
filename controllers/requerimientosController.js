@@ -12,14 +12,22 @@ const sanitizeFileName = (fileName) => {
   return fileName.replace(/[^\w.-]/g, '');
 };
 
-// Mapeo de correos de empleados a su jefe
-const mapaEmpleadosJefes = {
-  'juanmerkahorro@gmail.com': 'desarrollo@merkahorrosas.com',
-  'johanmerkahorro777@gmail.com': 'desarrollo@merkahorrosas.com'
+// Estructura de grupos de líderes con sus empleados
+const gruposLideres = {
+  'desarrollo@merkahorrosas.com': ['kp0827074@gmail.com'],
+  'isazamanuel04@gmail.com': ['juanmerkahorro@gmail.com'],
+  'johansanchezvalencia@gmail.com': ['johanmerkahorro777@gmail.com']
 };
 
 const obtenerJefePorEmpleado = (correo_empleado) => {
-  return mapaEmpleadosJefes[correo_empleado] || 'operaciones@merkahorrosas.com';
+  // Recorre cada grupo y verifica si el correo está en la lista de empleados
+  for (const [lider, empleados] of Object.entries(gruposLideres)) {
+    if (empleados.includes(correo_empleado)) {
+      return lider;
+    }
+  }
+  // Si no se encuentra, retorna un valor por defecto
+  return 'operaciones@merkahorrosas.com';
 };
 
 // ✅ Crear requerimiento
@@ -134,7 +142,7 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    // Determinar el destinatario según el remitente usando el mapeo
+    // Determinar el destinatario según el remitente usando la función de grupos
     const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
 
     // Preparar el mensaje HTML para el encargado
@@ -279,7 +287,7 @@ export const crearRequerimiento = async (req, res) => {
 
     // Enviar el correo utilizando el destinatario determinado
     await sendEmail(
-      destinatarioEncargado,
+      obtenerJefePorEmpleado(correo_empleado),
       'Nuevo Requerimiento de Gasto',
       mensajeEncargado,
       archivoAdjunto
