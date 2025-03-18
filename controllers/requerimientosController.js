@@ -447,73 +447,101 @@ export const decidirRequerimiento = async (req, res) => {
 };
 
 
-// Nuevo endpoint para adjuntar comprobante de voucher
 export const adjuntarVoucher = async (req, res) => {
-  // Se asume que en el body se envían 'id' y 'correo_empleado' para identificar el gasto
-  const { id, correo_empleado } = req.body;
-  const voucherFile = req.files['voucher'] ? req.files['voucher'][0] : null;
+  try {
+    // Validación de parámetros: se requiere id, correo_empleado y el archivo voucher
+    const { id, correo_empleado } = req.body;
+    const voucherFile = req.files['voucher'] ? req.files['voucher'][0] : null;
+    if (!id || !correo_empleado || !voucherFile) {
+      return res.status(400).json({ error: 'Se requieren el id, correo_empleado y un comprobante de voucher.' });
+    }
 
-  if (!voucherFile) {
-    return res.status(400).json({ error: 'Debe enviar un comprobante de voucher.' });
-  }
+    // Generar un nombre único para el archivo y sanitizarlo
+    const uniqueVoucherName = `${Date.now()}_${sanitizeFileName(voucherFile.originalname)}`;
 
-  // Generar un nombre único para el archivo
-  const uniqueVoucherName = `${Date.now()}_${sanitizeFileName(voucherFile.originalname)}`;
-  
-  // Subir el voucher a Supabase en el bucket "cotizaciones", en la carpeta "comprobante"
-  const { data: uploadData, error: uploadError } = await supabase
-    .storage
-    .from('cotizaciones')
-    .upload(`comprobante/${uniqueVoucherName}`, voucherFile.buffer, { 
-      contentType: voucherFile.mimetype,
-    });
+    // Subir el voucher a Supabase en el bucket "cotizaciones", dentro de la carpeta "comprobante"
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('cotizaciones')
+      .upload(`comprobante/${uniqueVoucherName}`, voucherFile.buffer, { 
+        contentType: voucherFile.mimetype,
+      });
+    if (uploadError) {
+      console.error('❌ Error al subir el voucher:', uploadError);
+      return res.status(500).json({ error: uploadError.message });
+    }
 
-  if (uploadError) {
-    console.error('❌ Error al subir el voucher:', uploadError);
-    return res.status(500).json({ error: uploadError.message });
-  }
+    // Construir la URL completa del comprobante
+    const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/comprobante/${uploadData.path}`;
 
-  // Construir la URL completa usando el bucket "cotizaciones" y la ruta "comprobante"
-  const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/comprobante/${uploadData.path}`;
+    // Actualizar el registro en la base de datos (tabla Gastos)
+    const { data, error } = await supabase
+      .from('Gastos')
+      .update({ voucher: archivo_comprobante })
+      .eq('id', id)
+      .select();
+    if (error) {
+      console.error('❌ Error al actualizar el gasto con voucher:', error);
+      return res.status(500).json({ error: error.message });
+    }
 
-  // Actualizar el registro de gasto con el voucher
-  const { data, error } = await supabase
-    .from('Gastos')
-    .update({ voucher: archivo_comprobante })
-    .eq('id', id)
-    .select();
-
-  if (error) {
-    console.error('❌ Error al actualizar el gasto con voucher:', error);
+    // Se responde exitosamente indicando que se adjuntó el voucher
+    return res.status(200).json({ message: 'Voucher adjuntado correctamente', archivo_comprobante });
+  } catch (error) {
+    console.error("❌ Error en adjuntarVoucher:", error);
     return res.status(500).json({ error: error.message });
   }
+};
 
-  // Preparar el mensaje HTML para el solicitante
-  const mensajeVoucher = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>Voucher Adjuntado</title>
-    </head>
-    <body>
-      <p>Se ha adjuntado un comprobante de voucher para el gasto con ID: ${id}.</p>
-      <p>Puedes ver el comprobante <a href="${archivo_comprobante}" target="_blank">aquí</a>.</p>
-    </body>
-    </html>
-  `;
 
+export const enviarVoucher = async (req, res) => {
   try {
-    // Enviar el correo al solicitante (correo_empleado)
+    // Validación de parámetros
+    const { id, correo_empleado } = req.body;
+    if (!id || !correo_empleado) {
+      return res.status(400).json({ error: 'Se requieren los campos id y correo_empleado.' });
+    }
+
+    // Consultar la base de datos para obtener la URL del voucher
+    const { data, error } = await supabase
+      .from('Gastos')
+      .select('voucher')
+      .eq('id', id)
+      .single();
+    if (error) {
+      console.error('❌ Error al consultar el gasto:', error);
+      return res.status(500).json({ error: error.message });
+    }
+    if (!data || !data.voucher) {
+      return res.status(400).json({ error: 'No se encontró un voucher para este gasto.' });
+    }
+    const voucherURL = data.voucher;
+
+    // Preparar el mensaje HTML para el correo
+    const mensajeVoucher = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Voucher Reenviado</title>
+      </head>
+      <body>
+        <p>Se ha reenviado el comprobante de voucher para el gasto con ID: ${id}.</p>
+        <p>Puedes ver el comprobante <a href="${voucherURL}" target="_blank">aquí</a>.</p>
+      </body>
+      </html>
+    `;
+
+    // Enviar el correo al solicitante
     await sendEmail(
       correo_empleado,
-      'Comprobante de Voucher Adjunto',
+      'Reenvío de Voucher',
       mensajeVoucher
     );
-  } catch (mailError) {
-    console.error('❌ Error al enviar el correo:', mailError);
-    // Puedes decidir si respondes con error o con éxito parcial
-  }
 
-  return res.status(200).json({ message: 'Voucher adjuntado y notificación enviada', archivo_comprobante });
+    return res.status(200).json({ message: 'Voucher enviado al correo del solicitante.' });
+  } catch (error) {
+    console.error('❌ Error en enviarVoucher:', error);
+    return res.status(500).json({ error: error.message });
+  }
 };
