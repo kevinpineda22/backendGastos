@@ -472,7 +472,7 @@ export const adjuntarVoucher = async (req, res) => {
     }
 
     // Construir la URL completa del comprobante
-    const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/comprobante/${uploadData.path}`;
+    const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
 
     // Actualizar el registro en la base de datos (tabla Gastos)
     const { data, error } = await supabase
