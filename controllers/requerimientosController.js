@@ -519,15 +519,62 @@ export const enviarVoucher = async (req, res) => {
 
     // Preparar el mensaje HTML para el correo
     const mensajeVoucher = `
-      <!DOCTYPE html>
-      <html>
+      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+      <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
         <meta charset="UTF-8">
-        <title>Voucher Reenviado</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reenvío de Voucher - Supermercado Merkahorro</title>
       </head>
-      <body>
-        <p>Se ha reenviado el comprobante de voucher para el gasto con ID: ${id}.</p>
-        <p>Puedes ver el comprobante <a href="${voucherURL}" target="_blank">aquí</a>.</p>
+      <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f4f4f4">
+          <tr>
+            <td align="center">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <!-- Encabezado -->
+                <tr>
+                  <td bgcolor="#1e3a8a" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Voucher</h1>
+                    <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
+                  </td>
+                </tr>
+                <!-- Contenido -->
+                <tr>
+                  <td style="padding: 30px; color: #333333;">
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
+                      Estimado/a usuario/a,
+                    </p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
+                      Se ha reenviado el comprobante de voucher correspondiente al gasto con ID: <strong>${id}</strong>.
+                    </p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
+                      Puedes visualizar el comprobante haciendo clic en el siguiente enlace:
+                    </p>
+                    <p style="text-align: center; margin: 20px 0;">
+                      <a href="${voucherURL}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
+                        Ver Comprobante
+                      </a>
+                    </p>
+                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">
+                      Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.
+                    </p>
+                  </td>
+                </tr>
+                <!-- Pie de página -->
+                <tr>
+                  <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <p style="font-size: 12px; color: #666666; margin: 0;">
+                      © 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.
+                    </p>
+                    <p style="font-size: 12px; color: #666666; margin: 5px 0 0;">
+                      NIT: 901150440-9 | Dirección: [Tu Dirección]
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
       </body>
       </html>
     `;
@@ -535,7 +582,7 @@ export const enviarVoucher = async (req, res) => {
     // Enviar el correo al solicitante
     await sendEmail(
       correo_empleado,
-      'Reenvío de Voucher',
+      'Reenvío de Voucher - Supermercado Merkahorro',
       mensajeVoucher
     );
 
