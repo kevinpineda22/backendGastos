@@ -8,7 +8,6 @@ const upload = multer({ storage });
 
 // Función para sanitizar el nombre del archivo, eliminando caracteres especiales no permitidos
 const sanitizeFileName = (fileName) => {
-  // Se eliminan caracteres que no sean letras, números, guion, guion bajo o punto
   return fileName.replace(/[^\w.-]/g, '');
 };
 
@@ -20,13 +19,11 @@ const gruposLideres = {
 };
 
 const obtenerJefePorEmpleado = (correo_empleado) => {
-  // Recorre cada grupo y verifica si el correo está en la lista de empleados
   for (const [lider, empleados] of Object.entries(gruposLideres)) {
     if (empleados.includes(correo_empleado)) {
       return lider;
     }
   }
-  // Si no se encuentra, retorna un valor por defecto
   return 'operaciones@merkahorrosas.com';
 };
 
@@ -54,16 +51,13 @@ export const crearRequerimiento = async (req, res) => {
 
   console.log("Correo del solicitante recibido:", correo_empleado);
 
-  // Verificar que el archivo de cotización esté presente
   if (!archivoCotizacion) {
     return res.status(400).json({ error: 'El archivo de cotización es obligatorio.' });
   }
 
-  // Generar un token único para el requerimiento
   const token = crypto.randomBytes(16).toString('hex');
 
   try {
-    // Subir el archivo PDF de cotización a Supabase
     let archivoCotizacionUrl = '';
     if (archivoCotizacion) {
       const uniqueFileName = `${Date.now()}_${sanitizeFileName(archivoCotizacion.originalname)}`;
@@ -82,7 +76,6 @@ export const crearRequerimiento = async (req, res) => {
       archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
     }
 
-    // Subir los archivos proporcionados por el proveedor a Supabase
     let archivosProveedorUrls = [];
     if (archivosProveedor && archivosProveedor.length > 0) {
       for (let archivo of archivosProveedor) {
@@ -104,17 +97,14 @@ export const crearRequerimiento = async (req, res) => {
       }
     }
 
-    // Asegurarse de que unidad, centro_costos y sede sean arrays
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
     const centroCostosArray = Array.isArray(centro_costos) ? centro_costos : [centro_costos];
     const sedesArray = Array.isArray(sede) ? sede : [sede];
 
-    // Convertir los arrays a formato PostgreSQL
     const unidadPgArray = `{${unidadArray.map(item => `"${item}"`).join(',')}}`;
     const centroCostosPgArray = `{${centroCostosArray.map(item => `"${item}"`).join(',')}}`;
     const sedesPgArray = `{${sedesArray.map(item => `"${item}"`).join(',')}}`;
 
-    // Insertar el requerimiento en la base de datos
     const { data, error } = await supabase
       .from('Gastos')
       .insert([{
@@ -142,10 +132,8 @@ export const crearRequerimiento = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    // Determinar el destinatario según el remitente usando la función de grupos
     const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
 
-    // Preparar el mensaje HTML para el encargado
     const mensajeEncargado = `
     <!DOCTYPE html>
     <html>
@@ -153,31 +141,11 @@ export const crearRequerimiento = async (req, res) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #f4f4f4;
-          margin: 0;
-          padding: 0;
-        }
-        table {
-          width: 100%;
-          border-spacing: 0;
-          background-color: #ffffff;
-        }
-        td {
-          padding: 15px;
-        }
-        h2 {
-          font-size: 24px;
-          color: rgb(255, 255, 255);
-        }
-        .button {
-          background-color: #210d65;
-          color: white;
-          padding: 10px 20px;
-          text-decoration: none;
-          border-radius: 5px;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        table { width: 100%; border-spacing: 0; background-color: #ffffff; }
+        td { padding: 15px; }
+        h2 { font-size: 24px; color: rgb(255, 255, 255); }
+        .button { background-color: #210d65; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
       </style>
     </head>
     <body>
@@ -195,60 +163,19 @@ export const crearRequerimiento = async (req, res) => {
                   <p>Estimado encargado,</p>
                   <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
                   <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                      <td style="font-weight: bold;">Nombre Completo:</td>
-                      <td>${nombre_completo}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Área:</td>
-                      <td>${area}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Descripción:</td>
-                      <td>${descripcion}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Procesos:</td>
-                      <td>${procesos}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Sedes:</td>
-                      <td>${sedesArray.join(', ')}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Unidad de Negocio:</td>
-                      <td>${unidadArray.join(', ')}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Centro de Costos:</td>
-                      <td>${centroCostosArray.join(', ')}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Monto Estimado:</td>
-                      <td>$${monto_estimado}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Monto por sede:</td>
-                      <td>$${monto_sede}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Anticipo:</td>
-                      <td>$${anticipo}</td> 
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Fecha tiempo estimado de pago:</td>
-                      <td>$${tiempo_fecha_pago}</td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Cotización:</td>
-                      <td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td>
-                    </tr>
-                    <tr>
-                      <td style="font-weight: bold;">Archivos del Proveedor:</td>
-                      <td>
-                        ${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}
-                      </td>
-                    </tr>
+                    <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${nombre_completo}</td></tr>
+                    <tr><td style="font-weight: bold;">Área:</td><td>${area}</td></tr>
+                    <tr><td style="font-weight: bold;">Descripción:</td><td>${descripcion}</td></tr>
+                    <tr><td style="font-weight: bold;">Procesos:</td><td>${procesos}</td></tr>
+                    <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(', ')}</td></tr>
+                    <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(', ')}</td></tr>
+                    <tr><td style="font-weight: bold;">Centro de Costos:</td><td>${centroCostosArray.join(', ')}</td></tr>
+                    <tr><td style="font-weight: bold;">Monto Estimado:</td><td>$${monto_estimado}</td></tr>
+                    <tr><td style="font-weight: bold;">Monto por sede:</td><td>$${monto_sede}</td></tr>
+                    <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
+                    <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
+                    <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
+                    <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}</td></tr>
                   </table>
                   <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
                   <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
@@ -266,7 +193,6 @@ export const crearRequerimiento = async (req, res) => {
     </html>
     `;
 
-    // Crear el array de archivos adjuntos
     const archivoAdjunto = [];
     archivoAdjunto.push({
       filename: archivoCotizacion.originalname,
@@ -274,7 +200,6 @@ export const crearRequerimiento = async (req, res) => {
       encoding: 'base64',
     });
 
-    // Agregar los archivos del proveedor al array de archivos adjuntos (si existen)
     if (archivosProveedor && archivosProveedor.length > 0) {
       archivosProveedor.forEach((archivo) => {
         archivoAdjunto.push({
@@ -285,15 +210,13 @@ export const crearRequerimiento = async (req, res) => {
       });
     }
 
-    // Enviar el correo utilizando el destinatario determinado
     await sendEmail(
-      obtenerJefePorEmpleado(correo_empleado),
+      destinatarioEncargado,
       'Nuevo Requerimiento de Gasto',
       mensajeEncargado,
       archivoAdjunto
     );
 
-    // Responder al cliente con un objeto JSON con el mensaje de éxito y token
     return res.status(201).json({
       message: 'Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.',
       token,
@@ -304,15 +227,15 @@ export const crearRequerimiento = async (req, res) => {
   }
 };
 
-// Función para obtener el historial de gastos
+// ✅ Consultar historial de gastos por empleado
 export const obtenerHistorialGastos = async (req, res) => {
-  const { correo_empleado } = req.query; // Obtener el correo del query params
+  const { correo_empleado } = req.query;
 
   try {
     const { data, error } = await supabase
       .from('Gastos')
       .select('*')
-      .eq('correo_empleado', correo_empleado) // Filtrar por correo
+      .eq('correo_empleado', correo_empleado)
       .order('fecha_creacion', { ascending: false });
 
     if (error) {
@@ -328,7 +251,7 @@ export const obtenerHistorialGastos = async (req, res) => {
   }
 };
 
-// ✅ Consultar requerimientos
+// ✅ Consultar todos los requerimientos
 export const obtenerRequerimientos = async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -348,18 +271,27 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
+// ✅ Actualizar requerimiento (corregido para manejar voucher)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado, observacionC } = req.body; // <-- Asegúrate de extraer verificado
+  const { estado, observacion, verificado, observacionC, voucher } = req.body;
 
   console.log("Actualizando registro con ID:", id);
-  console.log("Datos recibidos:", { estado, observacion, observacionC, verificado });
+  console.log("Datos recibidos:", { estado, observacion, observacionC, verificado, voucher });
 
   try {
+    const updateData = {};
+    if (estado !== undefined) updateData.estado = estado;
+    if (observacion !== undefined) updateData.observacion = observacion;
+    if (observacionC !== undefined) updateData.observacionC = observacionC;
+    if (verificado !== undefined) updateData.verificado = verificado;
+    if (voucher !== undefined) updateData.voucher = voucher; // Permitimos null o un valor
+
     const { data, error } = await supabase
       .from('Gastos')
-      .update({ estado, observacion, observacionC, verificado })
-      .eq('id', id);
+      .update(updateData)
+      .eq('id', id)
+      .select();
 
     console.log("Resultado del update:", { data, error });
 
@@ -369,17 +301,18 @@ export const actualizarRequerimiento = async (req, res) => {
     }
 
     if (!data || data.length === 0) {
-      console.warn("No se retornaron filas actualizadas; se asume éxito.");
+      console.warn("No se retornaron filas actualizadas; posible ID inválido.");
+      return res.status(404).json({ error: "Requerimiento no encontrado" });
     }
 
-    return res.status(200).json({ message: "Registro actualizado correctamente", data: data || [] });
+    return res.status(200).json({ message: "Registro actualizado correctamente", data });
   } catch (err) {
     console.error("Error en actualizarRequerimiento:", err);
     return res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Página para aprobar o rechazar requerimiento (Este es el endpoint que se llama desde el correo)
+// ✅ Decidir requerimiento (aprobar/rechazar)
 export const decidirRequerimiento = async (req, res) => {
   const { token, decision, observacion } = req.body;
 
@@ -446,20 +379,17 @@ export const decidirRequerimiento = async (req, res) => {
   }
 };
 
-
+// ✅ Adjuntar voucher
 export const adjuntarVoucher = async (req, res) => {
   try {
-    // Validación de parámetros: se requiere id, correo_empleado y el archivo voucher
     const { id, correo_empleado } = req.body;
     const voucherFile = req.files['voucher'] ? req.files['voucher'][0] : null;
     if (!id || !correo_empleado || !voucherFile) {
       return res.status(400).json({ error: 'Se requieren el id, correo_empleado y un comprobante de voucher.' });
     }
 
-    // Generar un nombre único para el archivo y sanitizarlo
     const uniqueVoucherName = `${Date.now()}_${sanitizeFileName(voucherFile.originalname)}`;
 
-    // Subir el voucher a Supabase en el bucket "cotizaciones", dentro de la carpeta "comprobante"
     const { data: uploadData, error: uploadError } = await supabase
       .storage
       .from('cotizaciones')
@@ -471,10 +401,8 @@ export const adjuntarVoucher = async (req, res) => {
       return res.status(500).json({ error: uploadError.message });
     }
 
-    // Construir la URL completa del comprobante
     const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
 
-    // Actualizar el registro en la base de datos (tabla Gastos)
     const { data, error } = await supabase
       .from('Gastos')
       .update({ voucher: archivo_comprobante })
@@ -485,7 +413,6 @@ export const adjuntarVoucher = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    // Se responde exitosamente indicando que se adjuntó el voucher
     return res.status(200).json({ message: 'Voucher adjuntado correctamente', archivo_comprobante });
   } catch (error) {
     console.error("❌ Error en adjuntarVoucher:", error);
@@ -493,7 +420,7 @@ export const adjuntarVoucher = async (req, res) => {
   }
 };
 
-/// ✅ Eliminar requerimiento
+// ✅ Eliminar requerimiento
 export const eliminarRequerimiento = async (req, res) => {
   try {
     const { id } = req.params;
@@ -502,7 +429,6 @@ export const eliminarRequerimiento = async (req, res) => {
       return res.status(400).json({ error: "Se requiere un ID válido para eliminar el registro." });
     }
 
-    // Verificar si el requerimiento existe antes de eliminarlo
     const { data: requerimiento, error: fetchError } = await supabase
       .from("Gastos")
       .select("id")
@@ -513,7 +439,6 @@ export const eliminarRequerimiento = async (req, res) => {
       return res.status(404).json({ error: "Registro no encontrado." });
     }
 
-    // Eliminar el requerimiento de la base de datos
     const { error } = await supabase
       .from("Gastos")
       .delete()
@@ -531,16 +456,14 @@ export const eliminarRequerimiento = async (req, res) => {
   }
 };
 
-
+// ✅ Enviar voucher
 export const enviarVoucher = async (req, res) => {
   try {
-    // Validación de parámetros
     const { id, correo_empleado } = req.body;
     if (!id || !correo_empleado) {
       return res.status(400).json({ error: 'Se requieren los campos id y correo_empleado.' });
     }
 
-    // Consultar la base de datos para obtener la URL del voucher
     const { data, error } = await supabase
       .from('Gastos')
       .select('voucher')
@@ -555,7 +478,6 @@ export const enviarVoucher = async (req, res) => {
     }
     const voucherURL = data.voucher;
 
-    // Preparar el mensaje HTML para el correo
     const mensajeVoucher = `
       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml">
@@ -569,41 +491,26 @@ export const enviarVoucher = async (req, res) => {
           <tr>
             <td align="center">
               <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <!-- Encabezado -->
                 <tr>
                   <td bgcolor="#1e3a8a" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                     <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Voucher</h1>
                     <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
                   </td>
                 </tr>
-                <!-- Contenido -->
                 <tr>
                   <td style="padding: 30px; color: #333333;">
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
-                      Estimado/a usuario/a,
-                    </p>
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
-                      Se ha reenviado el comprobante de voucher correspondiente al gasto.
-                    </p>
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
-                      Puedes visualizar el comprobante haciendo clic en el siguiente enlace:
-                    </p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a usuario/a,</p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Se ha reenviado el comprobante de voucher correspondiente al gasto.</p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Puedes visualizar el comprobante haciendo clic en el siguiente enlace:</p>
                     <p style="text-align: center; margin: 20px 0;">
-                      <a href="${voucherURL}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
-                        Ver Comprobante
-                      </a>
+                      <a href="${voucherURL}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">Ver Comprobante</a>
                     </p>
-                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">
-                      Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.
-                    </p>
+                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.</p>
                   </td>
                 </tr>
-                <!-- Pie de página -->
                 <tr>
                   <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
-                    <p style="font-size: 12px; color: #666666; margin: 0;">
-                      © 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.
-                    </p>
+                    <p style="font-size: 12px; color: #666666; margin: 0;">© 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.</p>
                   </td>
                 </tr>
               </table>
@@ -614,7 +521,6 @@ export const enviarVoucher = async (req, res) => {
       </html>
     `;
 
-    // Enviar el correo al solicitante
     await sendEmail(
       correo_empleado,
       'Reenvío de Voucher - Supermercado Merkahorro',
