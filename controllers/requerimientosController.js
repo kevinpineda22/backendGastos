@@ -445,3 +445,72 @@ export const decidirRequerimiento = async (req, res) => {
     return res.status(500).json({ error: 'Hubo un problema al procesar la actualización del estado.' });
   }
 };
+
+
+// Nuevo endpoint para adjuntar comprobante de voucher
+export const adjuntarVoucher = async (req, res) => {
+  // Se asume que en el body se envían 'id' y 'correo_empleado' para identificar el gasto
+  const { id, correo_empleado } = req.body;
+  const voucherFile = req.files['voucher'] ? req.files['voucher'][0] : null;
+
+  if (!voucherFile) {
+    return res.status(400).json({ error: 'Debe enviar un comprobante de voucher.' });
+  }
+
+  // Subir el voucher a Supabase (asegúrate de tener un bucket "comprobante" configurado)
+  const uniqueVoucherName = `${Date.now()}_${sanitizeFileName(voucherFile.originalname)}`;
+  const { data: uploadData, error: uploadError } = await supabase
+    .storage
+    .from('comprobante')
+    .upload(`comprobante/${uniqueVoucherName}`, voucherFile.buffer, { 
+      contentType: voucherFile.mimetype,
+    });
+
+  if (uploadError) {
+    console.error('❌ Error al subir el voucher:', uploadError);
+    return res.status(500).json({ error: uploadError.message });
+  }
+
+  const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/comprobante/${uploadData.path}`;
+
+  // Actualizar el registro de gasto con el voucher
+  const { data, error } = await supabase
+    .from('Gastos')
+    .update({ voucher: archivo_comprobante })
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error('❌ Error al actualizar el gasto con voucher:', error);
+    return res.status(500).json({ error: error.message });
+  }
+
+  // Notificar mediante correo electrónico al encargado
+  const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
+  const mensajeVoucher = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Voucher Adjuntado</title>
+    </head>
+    <body>
+      <p>Se ha adjuntado un comprobante de voucher para el gasto con ID: ${id}.</p>
+      <p>Puedes ver el comprobante <a href="${archivo_comprobante}" target="_blank">aquí</a>.</p>
+    </body>
+    </html>
+  `;
+
+  try {
+    await sendEmail(
+      destinatarioEncargado,
+      'Comprobante de Voucher Adjunto',
+      mensajeVoucher
+    );
+  } catch (mailError) {
+    console.error('❌ Error al enviar el correo:', mailError);
+    // Puedes decidir si respondes con error o con éxito parcial
+  }
+
+  return res.status(200).json({ message: 'Voucher adjuntado y notificación enviada', archivo_comprobante });
+};
