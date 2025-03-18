@@ -448,7 +448,6 @@ export const decidirRequerimiento = async (req, res) => {
 
 
 // Nuevo endpoint para adjuntar comprobante de voucher
-// Nuevo endpoint para adjuntar comprobante de voucher
 export const adjuntarVoucher = async (req, res) => {
   // Se asume que en el body se envían 'id' y 'correo_empleado' para identificar el gasto
   const { id, correo_empleado } = req.body;
@@ -489,8 +488,7 @@ export const adjuntarVoucher = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  // Notificar mediante correo electrónico al encargado
-  const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
+  // Preparar el mensaje HTML para el solicitante
   const mensajeVoucher = `
     <!DOCTYPE html>
     <html>
@@ -506,8 +504,9 @@ export const adjuntarVoucher = async (req, res) => {
   `;
 
   try {
+    // Enviar el correo al solicitante (correo_empleado)
     await sendEmail(
-      destinatarioEncargado,
+      correo_empleado,
       'Comprobante de Voucher Adjunto',
       mensajeVoucher
     );
