@@ -6,6 +6,7 @@ import {
   obtenerHistorialGastos, 
   actualizarRequerimiento,
   adjuntarVoucher,
+  eliminarRequerimiento ,
   enviarVoucher  // Importa el nuevo controlador para reenviar voucher
 } from '../controllers/requerimientosController.js';
 import multer from 'multer';
@@ -13,6 +14,10 @@ import multer from 'multer';
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+// Ruta para eliminar un requerimiento
+router.delete("/eliminar/:id", eliminarRequerimiento);
+
 
 // Ruta para crear un requerimiento con carga de archivo
 router.post('/crear', upload.fields([

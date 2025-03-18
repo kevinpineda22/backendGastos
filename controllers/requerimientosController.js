@@ -493,6 +493,44 @@ export const adjuntarVoucher = async (req, res) => {
   }
 };
 
+/// ✅ Eliminar requerimiento
+export const eliminarRequerimiento = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Se requiere un ID válido para eliminar el registro." });
+    }
+
+    // Verificar si el requerimiento existe antes de eliminarlo
+    const { data: requerimiento, error: fetchError } = await supabase
+      .from("Gastos")
+      .select("id")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !requerimiento) {
+      return res.status(404).json({ error: "Registro no encontrado." });
+    }
+
+    // Eliminar el requerimiento de la base de datos
+    const { error } = await supabase
+      .from("Gastos")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("❌ Error al eliminar el requerimiento:", error);
+      return res.status(500).json({ error: "No se pudo eliminar el registro." });
+    }
+
+    return res.status(200).json({ message: "Registro eliminado correctamente." });
+  } catch (error) {
+    console.error("❌ Error en eliminarRequerimiento:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 
 export const enviarVoucher = async (req, res) => {
   try {
