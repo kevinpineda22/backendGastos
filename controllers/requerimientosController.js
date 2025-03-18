@@ -14,7 +14,7 @@ const sanitizeFileName = (fileName) => {
 
 // Estructura de grupos de líderes con sus empleados
 const gruposLideres = {
-  'desarrollo@merkahorrosas.com': ['kp0827074@gmail.com'],
+  'kp0827074@gmail.com': ['desarrollo@merkahorrosas.com'],
   'isazamanuel04@gmail.com': ['juanmerkahorro@gmail.com'],
   'johansanchezvalencia@gmail.com': ['johanmerkahorro777@gmail.com']
 };
@@ -545,13 +545,13 @@ export const enviarVoucher = async (req, res) => {
                       Estimado/a usuario/a,
                     </p>
                     <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
-                      Se ha reenviado el comprobante de voucher correspondiente al gasto con ID: <strong>${id}</strong>.
+                      Se ha reenviado el comprobante de voucher correspondiente al gasto.
                     </p>
                     <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">
                       Puedes visualizar el comprobante haciendo clic en el siguiente enlace:
                     </p>
                     <p style="text-align: center; margin: 20px 0;">
-                      <a href="${voucherURL}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
+                      <a href="${voucherURL}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
                         Ver Comprobante
                       </a>
                     </p>
@@ -565,9 +565,6 @@ export const enviarVoucher = async (req, res) => {
                   <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
                     <p style="font-size: 12px; color: #666666; margin: 0;">
                       © 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.
-                    </p>
-                    <p style="font-size: 12px; color: #666666; margin: 5px 0 0;">
-                      NIT: 901150440-9 | Dirección: [Tu Dirección]
                     </p>
                   </td>
                 </tr>
