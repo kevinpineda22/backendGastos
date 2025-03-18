@@ -448,6 +448,7 @@ export const decidirRequerimiento = async (req, res) => {
 
 
 // Nuevo endpoint para adjuntar comprobante de voucher
+// Nuevo endpoint para adjuntar comprobante de voucher
 export const adjuntarVoucher = async (req, res) => {
   // Se asume que en el body se envían 'id' y 'correo_empleado' para identificar el gasto
   const { id, correo_empleado } = req.body;
@@ -457,11 +458,13 @@ export const adjuntarVoucher = async (req, res) => {
     return res.status(400).json({ error: 'Debe enviar un comprobante de voucher.' });
   }
 
-  // Subir el voucher a Supabase (asegúrate de tener un bucket "comprobante" configurado)
+  // Generar un nombre único para el archivo
   const uniqueVoucherName = `${Date.now()}_${sanitizeFileName(voucherFile.originalname)}`;
+  
+  // Subir el voucher a Supabase en el bucket "cotizaciones", en la carpeta "comprobante"
   const { data: uploadData, error: uploadError } = await supabase
     .storage
-    .from('comprobante')
+    .from('cotizaciones')
     .upload(`comprobante/${uniqueVoucherName}`, voucherFile.buffer, { 
       contentType: voucherFile.mimetype,
     });
@@ -471,7 +474,8 @@ export const adjuntarVoucher = async (req, res) => {
     return res.status(500).json({ error: uploadError.message });
   }
 
-  const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/comprobante/${uploadData.path}`;
+  // Construir la URL completa usando el bucket "cotizaciones" y la ruta "comprobante"
+  const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/comprobante/${uploadData.path}`;
 
   // Actualizar el registro de gasto con el voucher
   const { data, error } = await supabase
