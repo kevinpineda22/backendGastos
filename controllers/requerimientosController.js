@@ -497,7 +497,7 @@ export const enviarVoucher = async (req, res) => {
             <td align="center">
               <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <tr>
-                  <td bgcolor="#1e3a8a" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                  <td bgcolor="#210d65" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                     <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Voucher</h1>
                     <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
                   </td>
