@@ -464,11 +464,13 @@ export const enviarVoucher = async (req, res) => {
       return res.status(400).json({ error: 'Se requieren los campos id y correo_empleado.' });
     }
 
+    // Consultar la base de datos para obtener el voucher y el nombre del destinatario
     const { data, error } = await supabase
       .from('Gastos')
-      .select('voucher')
+      .select('voucher, nombre_completo')
       .eq('id', id)
       .single();
+
     if (error) {
       console.error('❌ Error al consultar el gasto:', error);
       return res.status(500).json({ error: error.message });
@@ -476,8 +478,11 @@ export const enviarVoucher = async (req, res) => {
     if (!data || !data.voucher) {
       return res.status(400).json({ error: 'No se encontró un voucher para este gasto.' });
     }
-    const voucherURL = data.voucher;
 
+    const voucherURL = data.voucher;
+    const nombreDestinatario = data.nombre_completo || 'usuario/a';
+
+    // Construir el mensaje HTML incluyendo el nombre del destinatario
     const mensajeVoucher = `
       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml">
@@ -499,7 +504,7 @@ export const enviarVoucher = async (req, res) => {
                 </tr>
                 <tr>
                   <td style="padding: 30px; color: #333333;">
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a usuario/a,</p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a ${nombreDestinatario},</p>
                     <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Se ha reenviado el comprobante de voucher correspondiente al gasto.</p>
                     <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Puedes visualizar el comprobante haciendo clic en el siguiente enlace:</p>
                     <p style="text-align: center; margin: 20px 0;">
