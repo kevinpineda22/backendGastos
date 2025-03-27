@@ -5,9 +5,10 @@ import {
   decidirRequerimiento, 
   obtenerHistorialGastos, 
   actualizarRequerimiento,
-  adjuntarVoucher,
+  adjuntarVouchers,
+  eliminarVoucher,
+  enviarVouchers,  // Importa el nuevo controlador para reenviar voucher
   eliminarRequerimiento ,
-  enviarVoucher  // Importa el nuevo controlador para reenviar voucher
 } from '../controllers/requerimientosController.js';
 import multer from 'multer';
 
@@ -25,15 +26,14 @@ router.post('/crear', upload.fields([
   { name: 'archivos_proveedor', maxCount: 10 }     // Para los archivos del proveedor
 ]), crearRequerimiento);
 
-// Ruta para adjuntar comprobante (voucher)
-// Se espera que el archivo se envíe en el campo "voucher"
-router.post('/adjuntarVoucher', upload.fields([
-  { name: 'voucher', maxCount: 1 }
-]), adjuntarVoucher);
 
-// Ruta para reenviar el voucher al correo del solicitante
-router.post('/enviarVoucher', enviarVoucher);
+router.post('/adjuntarVouchers', upload.fields([
+  { name: 'vouchers', maxCount: 10 }
+]), adjuntarVouchers);
 
+router.post('/enviarVouchers', enviarVouchers);
+
+router.post('/eliminarVoucher', eliminarVoucher);
 // Otras rutas
 router.post('/decidirRequerimiento', decidirRequerimiento);
 router.put('/:id', actualizarRequerimiento);

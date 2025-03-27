@@ -378,45 +378,128 @@ export const decidirRequerimiento = async (req, res) => {
     return res.status(500).json({ error: 'Hubo un problema al procesar la actualización del estado.' });
   }
 };
-
-// ✅ Adjuntar voucher
-export const adjuntarVoucher = async (req, res) => {
+// ✅ Adjuntar múltiples vouchers
+export const adjuntarVouchers = async (req, res) => {
   try {
     const { id, correo_empleado } = req.body;
-    const voucherFile = req.files['voucher'] ? req.files['voucher'][0] : null;
-    if (!id || !correo_empleado || !voucherFile) {
-      return res.status(400).json({ error: 'Se requieren el id, correo_empleado y un comprobante de voucher.' });
+    const voucherFiles = req.files['vouchers'];
+
+    if (!id || !correo_empleado || !voucherFiles || voucherFiles.length === 0) {
+      return res.status(400).json({ error: 'Se requieren el id, correo_empleado y al menos un voucher.' });
     }
 
-    const uniqueVoucherName = `${Date.now()}_${sanitizeFileName(voucherFile.originalname)}`;
+    const voucherURLs = [];
 
-    const { data: uploadData, error: uploadError } = await supabase
-      .storage
-      .from('cotizaciones')
-      .upload(`comprobante/${uniqueVoucherName}`, voucherFile.buffer, { 
-        contentType: voucherFile.mimetype,
+    for (const file of voucherFiles) {
+      const uniqueName = `${Date.now()}_${uuidv4()}_${sanitizeFileName(file.originalname)}`;
+      const { data, error } = await supabase.storage.from('cotizaciones').upload(`comprobante/${uniqueName}`, file.buffer, {
+        contentType: file.mimetype,
       });
-    if (uploadError) {
-      console.error('❌ Error al subir el voucher:', uploadError);
-      return res.status(500).json({ error: uploadError.message });
+
+      if (error) {
+        console.error('❌ Error al subir un voucher:', error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      const fullURL = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${data.path}`;
+      voucherURLs.push(fullURL);
     }
 
-    const archivo_comprobante = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+    // Guardar arreglo de vouchers en la base de datos
+    const { data: updated, error: updateError } = await supabase
+      .from('Gastos')
+      .update({ vouchers: voucherURLs })
+      .eq('id', id)
+      .select();
+
+    if (updateError) {
+      console.error('❌ Error al guardar vouchers:', updateError);
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    return res.status(200).json({ message: 'Vouchers adjuntados correctamente', archivos_comprobantes: voucherURLs });
+  } catch (error) {
+    console.error('❌ Error general en adjuntarVouchers:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// ✅ Enviar múltiples vouchers por correo
+envíaVouchers = async (req, res) => {
+  try {
+    const { id, correo_empleado } = req.body;
+    if (!id || !correo_empleado) {
+      return res.status(400).json({ error: 'Faltan datos.' });
+    }
 
     const { data, error } = await supabase
       .from('Gastos')
-      .update({ voucher: archivo_comprobante })
+      .select('vouchers, nombre_completo')
       .eq('id', id)
-      .select();
+      .single();
+
+    if (error || !data?.vouchers?.length) {
+      return res.status(400).json({ error: 'No hay vouchers disponibles.' });
+    }
+
+    const linksHTML = data.vouchers.map((url, idx) => `
+      <p style="margin: 5px 0;">
+        <a href="${url}" target="_blank">Voucher ${idx + 1}</a>
+      </p>`).join('');
+
+    const html = `
+      <html><body>
+        <h2>Estimado/a ${data.nombre_completo},</h2>
+        <p>Estos son los comprobantes asociados a tu gasto:</p>
+        ${linksHTML}
+        <p>Gracias por confiar en nosotros.</p>
+      </body></html>`;
+
+    await sendEmail(correo_empleado, 'Vouchers adjuntos - Merkahorro', html);
+    return res.status(200).json({ message: 'Vouchers enviados correctamente.' });
+  } catch (err) {
+    console.error('❌ Error en enviarVouchers:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+// ✅ Eliminar un solo voucher
+export const eliminarVoucher = async (req, res) => {
+  try {
+    const { id, voucherURL } = req.body;
+
+    if (!id || !voucherURL) {
+      return res.status(400).json({ error: 'Se requiere id y voucherURL.' });
+    }
+
+    // Obtener los vouchers actuales
+    const { data, error } = await supabase
+      .from('Gastos')
+      .select('vouchers')
+      .eq('id', id)
+      .single();
+
     if (error) {
-      console.error('❌ Error al actualizar el gasto con voucher:', error);
       return res.status(500).json({ error: error.message });
     }
 
-    return res.status(200).json({ message: 'Voucher adjuntado correctamente', archivo_comprobante });
-  } catch (error) {
-    console.error("❌ Error en adjuntarVoucher:", error);
-    return res.status(500).json({ error: error.message });
+    const nuevosVouchers = data.vouchers.filter(url => url !== voucherURL);
+
+    // Actualizar la base de datos
+    const { error: updateError } = await supabase
+      .from('Gastos')
+      .update({ vouchers: nuevosVouchers })
+      .eq('id', id);
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    return res.status(200).json({ message: 'Voucher eliminado con éxito.', nuevosVouchers });
+  } catch (err) {
+    console.error("❌ Error al eliminar voucher:", err);
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -452,89 +535,6 @@ export const eliminarRequerimiento = async (req, res) => {
     return res.status(200).json({ message: "Registro eliminado correctamente." });
   } catch (error) {
     console.error("❌ Error en eliminarRequerimiento:", error);
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-// ✅ Enviar voucher
-export const enviarVoucher = async (req, res) => {
-  try {
-    const { id, correo_empleado } = req.body;
-    if (!id || !correo_empleado) {
-      return res.status(400).json({ error: 'Se requieren los campos id y correo_empleado.' });
-    }
-
-    // Consultar la base de datos para obtener el voucher y el nombre del destinatario
-    const { data, error } = await supabase
-      .from('Gastos')
-      .select('voucher, nombre_completo')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('❌ Error al consultar el gasto:', error);
-      return res.status(500).json({ error: error.message });
-    }
-    if (!data || !data.voucher) {
-      return res.status(400).json({ error: 'No se encontró un voucher para este gasto.' });
-    }
-
-    const voucherURL = data.voucher;
-    const nombreDestinatario = data.nombre_completo || 'usuario/a';
-
-    // Construir el mensaje HTML incluyendo el nombre del destinatario
-    const mensajeVoucher = `
-      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Reenvío de Voucher - Supermercado Merkahorro</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f4f4f4">
-          <tr>
-            <td align="center">
-              <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <tr>
-                  <td bgcolor="#210d65" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                    <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Voucher</h1>
-                    <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 30px; color: #333333;">
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a ${nombreDestinatario},</p>
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Se ha reenviado el comprobante de voucher correspondiente al gasto.</p>
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Puedes visualizar el comprobante haciendo clic en el siguiente enlace:</p>
-                    <p style="text-align: center; margin: 20px 0;">
-                      <a href="${voucherURL}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">Ver Comprobante</a>
-                    </p>
-                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
-                    <p style="font-size: 12px; color: #666666; margin: 0;">© 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
-
-    await sendEmail(
-      correo_empleado,
-      'Reenvío de Voucher - Supermercado Merkahorro',
-      mensajeVoucher
-    );
-
-    return res.status(200).json({ message: 'Voucher enviado al correo del solicitante.' });
-  } catch (error) {
-    console.error('❌ Error en enviarVoucher:', error);
     return res.status(500).json({ error: error.message });
   }
 };
