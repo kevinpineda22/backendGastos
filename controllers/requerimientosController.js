@@ -2,6 +2,8 @@ import supabase from '../services/supabaseService.js';
 import { sendEmail } from '../services/emailService.js';
 import crypto from 'crypto';
 import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
