@@ -426,7 +426,7 @@ export const adjuntarVouchers = async (req, res) => {
   }
 };
 
-// ✅ Enviar múltiples vouchers por correo
+// ✅ Enviar múltiples vouchers con diseño bonito
 export const enviarVouchers = async (req, res) => {
   try {
     const { id, correo_empleado } = req.body;
@@ -444,20 +444,57 @@ export const enviarVouchers = async (req, res) => {
       return res.status(400).json({ error: 'No hay vouchers disponibles.' });
     }
 
+    const nombreDestinatario = data.nombre_completo || "Usuario/a";
     const linksHTML = data.vouchers.map((url, idx) => `
-      <p style="margin: 5px 0;">
-        <a href="${url}" target="_blank">Voucher ${idx + 1}</a>
-      </p>`).join('');
+      <p style="text-align: center; margin: 12px 0;">
+        <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
+          Ver Voucher ${idx + 1}
+        </a>
+      </p>
+    `).join('');
 
-    const html = `
-      <html><body>
-        <h2>Estimado/a ${data.nombre_completo},</h2>
-        <p>Estos son los comprobantes asociados a tu gasto:</p>
-        ${linksHTML}
-        <p>Gracias por confiar en nosotros.</p>
-      </body></html>`;
+    const mensajeHTML = `
+      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+      <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reenvío de Vouchers - Supermercado Merkahorro</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f4f4f4">
+          <tr>
+            <td align="center">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <tr>
+                  <td bgcolor="#210d65" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Vouchers</h1>
+                    <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 30px; color: #333333;">
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a ${nombreDestinatario},</p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Te compartimos los comprobantes de voucher correspondientes a tu gasto:</p>
+                    ${linksHTML}
+                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <p style="font-size: 12px; color: #666666; margin: 0;">© 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
 
-    await sendEmail(correo_empleado, 'Vouchers adjuntos - Merkahorro', html);
+    await sendEmail(correo_empleado, 'Vouchers adjuntos - Merkahorro', mensajeHTML);
+
     return res.status(200).json({ message: 'Vouchers enviados correctamente.' });
   } catch (err) {
     console.error('❌ Error en enviarVouchers:', err);
