@@ -23,7 +23,7 @@ router.delete("/eliminar/:id", eliminarRequerimiento);
 // Ruta para crear un requerimiento con carga de archivo
 router.post('/crear', upload.fields([
   { name: 'archivo_cotizacion', maxCount: 1 },  // Para el archivo de cotización
-  { name: 'archivos_proveedor', maxCount: 10 }     // Para los archivos del proveedor
+  { name: 'archivos_proveedor', maxCount: 4 }     // Para los archivos del proveedor
 ]), crearRequerimiento);
 
 
