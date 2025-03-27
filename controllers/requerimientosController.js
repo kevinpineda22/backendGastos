@@ -380,6 +380,7 @@ export const decidirRequerimiento = async (req, res) => {
     return res.status(500).json({ error: 'Hubo un problema al procesar la actualización del estado.' });
   }
 };
+
 // ✅ Adjuntar múltiples vouchers
 export const adjuntarVouchers = async (req, res) => {
   try {
@@ -390,7 +391,21 @@ export const adjuntarVouchers = async (req, res) => {
       return res.status(400).json({ error: 'Se requieren el id, correo_empleado y al menos un voucher.' });
     }
 
-    const voucherURLs = [];
+    // 🟡 Obtener los vouchers actuales
+    const { data: currentData, error: currentError } = await supabase
+      .from('Gastos')
+      .select('vouchers')
+      .eq('id', id)
+      .single();
+
+    if (currentError) {
+      console.error('❌ Error al obtener los vouchers actuales:', currentError);
+      return res.status(500).json({ error: currentError.message });
+    }
+
+    const vouchersExistentes = Array.isArray(currentData.vouchers) ? currentData.vouchers : [];
+
+    const nuevosVouchers = [];
 
     for (const file of voucherFiles) {
       const uniqueName = `${Date.now()}_${uuidv4()}_${sanitizeFileName(file.originalname)}`;
@@ -404,27 +419,28 @@ export const adjuntarVouchers = async (req, res) => {
       }
 
       const fullURL = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${data.path}`;
-      voucherURLs.push(fullURL);
+      nuevosVouchers.push(fullURL);
     }
 
-    // Guardar arreglo de vouchers en la base de datos
-    const { data: updated, error: updateError } = await supabase
+    const todosLosVouchers = [...vouchersExistentes, ...nuevosVouchers];
+
+    const { error: updateError } = await supabase
       .from('Gastos')
-      .update({ vouchers: voucherURLs })
-      .eq('id', id)
-      .select();
+      .update({ vouchers: todosLosVouchers })
+      .eq('id', id);
 
     if (updateError) {
       console.error('❌ Error al guardar vouchers:', updateError);
       return res.status(500).json({ error: updateError.message });
     }
 
-    return res.status(200).json({ message: 'Vouchers adjuntados correctamente', archivos_comprobantes: voucherURLs });
+    return res.status(200).json({ message: 'Vouchers adjuntados correctamente', archivos_comprobantes: nuevosVouchers });
   } catch (error) {
     console.error('❌ Error general en adjuntarVouchers:', error);
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 // ✅ Enviar múltiples vouchers con diseño bonito
 export const enviarVouchers = async (req, res) => {
