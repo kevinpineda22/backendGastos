@@ -425,7 +425,7 @@ export const adjuntarVouchers = async (req, res) => {
 };
 
 // ✅ Enviar múltiples vouchers por correo
-envíaVouchers = async (req, res) => {
+enviarVouchers = async (req, res) => {
   try {
     const { id, correo_empleado } = req.body;
     if (!id || !correo_empleado) {
