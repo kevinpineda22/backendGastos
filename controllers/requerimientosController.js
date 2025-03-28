@@ -593,3 +593,38 @@ export const eliminarRequerimiento = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// ✅ Actualizar estado_cartera
+export const actualizarEstadoCartera = async (req, res) => {
+  const { id, estado_cartera } = req.body;
+
+  if (!id || !estado_cartera) {
+    return res.status(400).json({ error: 'Se requiere el id y el estado_cartera.' });
+  }
+
+  if (!['Pendiente', 'Anticipo', 'Cancelado'].includes(estado_cartera)) {
+    return res.status(400).json({ error: 'Estado de cartera inválido.' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('Gastos')
+      .update({ estado_cartera })
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('❌ Error al actualizar estado_cartera:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Requerimiento no encontrado' });
+    }
+
+    return res.status(200).json({ message: 'Estado de cartera actualizado correctamente', data });
+  } catch (error) {
+    console.error('❌ Error en actualizarEstadoCartera:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
