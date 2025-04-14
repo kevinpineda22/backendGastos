@@ -135,7 +135,6 @@ export const crearRequerimiento = async (req, res) => {
     }
 
     const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
-
     const mensajeEncargado = `
     <!DOCTYPE html>
     <html>
@@ -147,7 +146,14 @@ export const crearRequerimiento = async (req, res) => {
         table { width: 100%; border-spacing: 0; background-color: #ffffff; }
         td { padding: 15px; }
         h2 { font-size: 24px; color: rgb(255, 255, 255); }
-        .button { background-color: #210d65; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+        .button { 
+          background-color: #210d65; 
+          color: white !important; 
+          padding: 10px 20px; 
+          text-decoration: none; 
+          border-radius: 5px;
+          display: inline-block;
+        }
       </style>
     </head>
     <body>
@@ -180,7 +186,7 @@ export const crearRequerimiento = async (req, res) => {
                     <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}</td></tr>
                   </table>
                   <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-                  <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button">Aprobar/Rechazar</a>
+                  <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button" style="color: white !important;">Aprobar/Rechazar</a>
                   <div style="padding: 10px; font-style: italic;">
                     <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
                     <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
