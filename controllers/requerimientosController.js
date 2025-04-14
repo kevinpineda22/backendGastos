@@ -152,86 +152,72 @@ export const crearRequerimiento = async (req, res) => {
     }
 
     const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
+
     const mensajeEncargado = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        table { width: 100%; border-spacing: 0; background-color: #ffffff; }
-        td { padding: 15px; }
-        h2 { font-size: 24px; color: rgb(255, 255, 255); }
-        .button { 
-          background-color: #210d65; 
-          color: white !important; 
-          padding: 10px 20px; 
-          text-decoration: none; 
-          border-radius: 5px;
-          display: inline-block;
-        }
-      </style>
-    </head>
-    <body>
-      <table cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="center">
-            <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
-              <tr>
-                <td style="text-align: center; background-color: #210d65; color: white;">
-                  <h2>Nuevo Requerimiento de Gasto</h2>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <p>Estimado encargado,</p>
-                  <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
-                  <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                    <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${nombre_completo}</td></tr>
-                    <tr><td style="font-weight: bold;">Área:</td><td>${area}</td></tr>
-                    <tr><td style="font-weight: bold;">Descripción:</td><td>${descripcion}</td></tr>
-                    <tr><td style="font-weight: bold;">Procesos:</td><td>${procesos}</td></tr>
-                    <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(
-                      ", "
-                    )}</td></tr>
-                    <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(
-                      ", "
-                    )}</td></tr>
-                    <tr><td style="font-weight: bold;">Centro de Costos:</td><td>${centroCostosArray.join(
-                      ", "
-                    )}</td></tr>
-                    <tr><td style="font-weight: bold;">Monto Estimado:</td><td>$${monto_estimado}</td></tr>
-                    <tr><td style="font-weight: bold;">Monto por sede:</td><td>$${monto_sede}</td></tr>
-                    <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
-                    <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
-                    <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
-                    <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls
-                      .map(
-                        (url) =>
-                          `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`
-                      )
-                      .join("<br>")}</td></tr>
-                  </table>
-                  <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-
-                  <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(
-                    token
-                  )}" class="button">Aprobar/Rechazar</a>
-
-                  <div style="padding: 10px; font-style: italic;">
-                    <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-                    <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-    `;
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    table { width: 100%; border-spacing: 0; background-color: #ffffff; }
+    td { padding: 15px; }
+    h2 { font-size: 24px; color: rgb(255, 255, 255); }
+    .button { 
+      background-color: #210d65; 
+      color: white !important; 
+      padding: 10px 20px; 
+      text-decoration: none; 
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
+          <tr>
+            <td style="text-align: center; background-color: #210d65; color: white;">
+              <h2>Nuevo Requerimiento de Gasto</h2>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>Estimado encargado,</p>
+              <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
+              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
+                <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${nombre_completo}</td></tr>
+                <tr><td style="font-weight: bold;">Área:</td><td>${area}</td></tr>
+                <tr><td style="font-weight: bold;">Descripción:</td><td>${descripcion}</td></tr>
+                <tr><td style="font-weight: bold;">Procesos:</td><td>${procesos}</td></tr>
+                <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(', ')}</td></tr>
+                <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(', ')}</td></tr>
+                <tr><td style="font-weight: bold;">Centro de Costos:</td><td>${centroCostosArray.join(', ')}</td></tr>
+                <tr><td style="font-weight: bold;">Monto Estimado:</td><td>$${monto_estimado}</td></tr>
+                <tr><td style="font-weight: bold;">Monto por sede:</td><td>$${monto_sede}</td></tr>
+                <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
+                <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
+                <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
+                <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}</td></tr>
+              </table>
+              <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
+              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button" style="color: white !important;">Aprobar/Rechazar</a>
+              <div style="padding: 10px; font-style: italic;">
+                <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+                <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
 
     const archivoAdjunto = [];
     archivoAdjunto.push({
