@@ -309,10 +309,10 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
-// ✅ Actualizar requerimiento (corregido para manejar voucher)
+// ✅ Actualizar requerimiento (optimizado para factura como JSON y numero_causacion)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado, observacionC, voucher } = req.body;
+  const { estado, observacion, verificado, observacionC, voucher, factura, numero_causacion } = req.body;
 
   console.log("Actualizando registro con ID:", id);
   console.log("Datos recibidos:", {
@@ -321,6 +321,8 @@ export const actualizarRequerimiento = async (req, res) => {
     observacionC,
     verificado,
     voucher,
+    factura,
+    numero_causacion,
   });
 
   try {
@@ -329,7 +331,36 @@ export const actualizarRequerimiento = async (req, res) => {
     if (observacion !== undefined) updateData.observacion = observacion;
     if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
-    if (voucher !== undefined) updateData.voucher = voucher; // Permitimos null o un valor
+    if (voucher !== undefined) updateData.voucher = voucher;
+
+    // Validar y asignar factura (JSON)
+    if (factura !== undefined) {
+      try {
+        // Asegurarse de que factura sea un array válido
+        const parsedFactura = typeof factura === "string" ? JSON.parse(factura) : factura;
+        if (!Array.isArray(parsedFactura)) {
+          return res.status(400).json({ error: "El campo factura debe ser un array de URLs" });
+        }
+        // Opcional: Validar que cada elemento sea una URL válida
+        parsedFactura.forEach((url, index) => {
+          if (typeof url !== "string" || !url.startsWith("https://")) {
+            throw new Error(`La URL en la posición ${index} no es válida`);
+          }
+        });
+        updateData.factura = parsedFactura;
+      } catch (e) {
+        console.error("Error al parsear factura:", e);
+        return res.status(400).json({ error: "El campo factura debe ser un JSON válido" });
+      }
+    }
+
+    // Validar y asignar numero_causacion (string)
+    if (numero_causacion !== undefined) {
+      if (typeof numero_causacion !== "string") {
+        return res.status(400).json({ error: "El campo numero_causacion debe ser un string" });
+      }
+      updateData.numero_causacion = numero_causacion;
+    }
 
     const { data, error } = await supabase
       .from("Gastos")
@@ -404,12 +435,10 @@ export const decidirRequerimiento = async (req, res) => {
         <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
           <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
           <p>Estimado ${data.nombre_completo},</p>
-          <p>Tu necesidad de conciencia del gasto "<strong>${
-            data.descripcion
-          }</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
-          <p><strong>Observación:</strong> ${
-            observacion || "Sin observaciones."
-          }</p>
+          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion
+      }</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
+          <p><strong>Observación:</strong> ${observacion || "Sin observaciones."
+      }</p>
           <div style="padding: 10px; font-style: italic;">
             <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
             <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
