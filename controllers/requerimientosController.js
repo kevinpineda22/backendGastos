@@ -309,7 +309,7 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
-// ✅ Actualizar requerimiento (optimizado para factura como JSON y numero_causacion)
+// ✅ Actualizar requerimiento (corregido para manejar voucher)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
   const { estado, observacion, verificado, observacionC, voucher, factura, numero_causacion } = req.body;
@@ -327,7 +327,10 @@ export const actualizarRequerimiento = async (req, res) => {
 
   try {
     const updateData = {};
-    if (estado !== undefined) updateData.estado = estado;
+    if (estado !== undefined) {
+      updateData.estado = estado;
+      updateData.hora_cambio_estado = new Date().toISOString(); // Registrar hora del cambio de estado
+    }
     if (observacion !== undefined) updateData.observacion = observacion;
     if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
