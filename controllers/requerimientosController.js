@@ -330,17 +330,10 @@ export const actualizarRequerimiento = async (req, res) => {
     if (estado !== undefined) {
       updateData.estado = estado;
 
-      // Registrar hora del cambio de estado en formato local (America/Bogota)
+      // Registrar hora del cambio de estado en formato compatible con PostgreSQL
       const now = new Date();
-      updateData.hora_cambio_estado = now.toLocaleString("es-CO", {
-        timeZone: "America/Bogota",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
+      const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+      updateData.hora_cambio_estado = bogotaTime.toISOString().replace("T", " ").split(".")[0];
     }
     if (observacion !== undefined) updateData.observacion = observacion;
     if (observacionC !== undefined) updateData.observacionC = observacionC;
