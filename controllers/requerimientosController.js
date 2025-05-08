@@ -329,7 +329,18 @@ export const actualizarRequerimiento = async (req, res) => {
     const updateData = {};
     if (estado !== undefined) {
       updateData.estado = estado;
-      updateData.hora_cambio_estado = new Date().toISOString(); // Registrar hora del cambio de estado
+
+      // Registrar hora del cambio de estado en formato local (America/Bogota)
+      const now = new Date();
+      updateData.hora_cambio_estado = now.toLocaleString("es-CO", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     }
     if (observacion !== undefined) updateData.observacion = observacion;
     if (observacionC !== undefined) updateData.observacionC = observacionC;
