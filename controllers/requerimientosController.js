@@ -416,19 +416,22 @@ export const decidirRequerimiento = async (req, res) => {
       return res.status(404).json({ error: "Requerimiento no encontrado" });
     }
 
+    // Registrar hora del cambio de estado en formato compatible con PostgreSQL
+    const now = new Date();
+    const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+    const horaCambioEstado = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+
     const { error: updateError } = await supabase
       .from("Gastos")
       .update({
         estado: decision,
         observacion: observacion,
+        hora_cambio_estado: horaCambioEstado, // Agregar hora del cambio de estado
       })
       .eq("token", token);
 
     if (updateError) {
-      console.error(
-        "❌ Error al actualizar estado y observación:",
-        updateError
-      );
+      console.error("❌ Error al actualizar estado y observación:", updateError);
       return res.status(500).json({ error: updateError.message });
     }
 
@@ -442,10 +445,9 @@ export const decidirRequerimiento = async (req, res) => {
         <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
           <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
           <p>Estimado ${data.nombre_completo},</p>
-          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion
-      }</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
-          <p><strong>Observación:</strong> ${observacion || "Sin observaciones."
-      }</p>
+          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
+          <p><strong>Observación:</strong> ${observacion || "Sin observaciones."}</p>
+          <p><strong>Hora de decisión:</strong> ${horaCambioEstado}</p>
           <div style="padding: 10px; font-style: italic;">
             <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
             <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
@@ -463,18 +465,14 @@ export const decidirRequerimiento = async (req, res) => {
       mensajeSolicitante
     );
 
-    return res
-      .status(200)
-      .json({
-        message: `Requerimiento ${decision} y observación guardados correctamente.`,
-      });
+    return res.status(200).json({
+      message: `Requerimiento ${decision} y observación guardados correctamente.`,
+    });
   } catch (error) {
     console.error("❌ Error en la actualización del estado:", error);
-    return res
-      .status(500)
-      .json({
-        error: "Hubo un problema al procesar la actualización del estado.",
-      });
+    return res.status(500).json({
+      error: "Hubo un problema al procesar la actualización del estado.",
+    });
   }
 };
 
