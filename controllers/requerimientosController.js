@@ -17,6 +17,8 @@ const gruposLideres = {
   "kp0827074@gmail.com": ["desarrollo@merkahorrosas.com"],
   "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com", "developersmk@merkahorrosas.com"],
   "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
+  "contabilidad1@merkahorrosas.com": ["analistacontable@merkahorrosas.com"],
+
 };
 
 const obtenerJefePorEmpleado = (correo_empleado) => {
