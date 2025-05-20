@@ -14,7 +14,7 @@ const sanitizeFileName = (fileName) => {
 
 // Estructura de grupos de líderes con sus empleados
 const gruposLideres = {
-  "kp0827074@gmail.com": ["desarrollo@merkahorrosas.com"],
+  "kp0827074@gmail.com": ["desarrollo@merkahorrosas.com", "developersmk@merkahorrosas.com"],
   "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com"],
   "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
 };
