@@ -17,7 +17,16 @@ const gruposLideres = {
   "kp0827074@gmail.com": ["desarrollo@merkahorrosas.com"],
   "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com", "developersmk@merkahorrosas.com"],
   "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
+
+  //Ana Maria
   "contabilidad1@merkahorrosas.com": ["analistacontable@merkahorrosas.com"],
+
+  //DON ESTIVEN
+  "gerencia1@merkahorrosas.com": ["comercial@merkahorrosas.com","paginaweb@merkahorrosas.com"],
+
+   //YULIANA GARCIA
+  "gestionhumana@merkahorrosas.com": ["asistentegh@merkahorrosas.com","sistemageneralsst@merkahorrosas.com","analistadebienestar@merkahorrosas.com"],
+
 
 };
 
@@ -26,7 +35,8 @@ const obtenerJefePorEmpleado = (correo_empleado) => {
     if (empleados.includes(correo_empleado)) {
       return lider;
     }
-  }
+  } 
+            //Don Ramiro
   return "operaciones@merkahorrosas.com";
 };
 
