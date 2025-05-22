@@ -14,20 +14,35 @@ const sanitizeFileName = (fileName) => {
 
 // Estructura de grupos de líderes con sus empleados
 const gruposLideres = {
-  "kp0827074@gmail.com": ["desarrollo@merkahorrosas.com"],
-  "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com", "developersmk@merkahorrosas.com"],
+  "kp0827074@gmail.com": [
+    "desarrollo@merkahorrosas.com",
+    "developersmk@merkahorrosas.com",
+  ],
+  "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com"],
   "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
 
   //Ana Maria
   "contabilidad1@merkahorrosas.com": ["analistacontable@merkahorrosas.com"],
 
   //DON ESTIVEN
-  "gerencia1@merkahorrosas.com": ["comercial@merkahorrosas.com","paginaweb@merkahorrosas.com"],
+  "gerencia1@merkahorrosas.com": [
+    "comercial@merkahorrosas.com",
+    "paginaweb@merkahorrosas.com",
+  ],
 
-   //YULIANA GARCIA
-  "gestionhumana@merkahorrosas.com": ["asistentegh@merkahorrosas.com","sistemageneralsst@merkahorrosas.com","analistadebienestar@merkahorrosas.com"],
+  //YULIANA GARCIA
+  "gestionhumana@merkahorrosas.com": [
+    "asistentegh@merkahorrosas.com",
+    "sistemageneralsst@merkahorrosas.com",
+    "analistadebienestar@merkahorrosas.com",
+  ],
 
-
+  //Carolina Hernandez
+    "carteraytesoreria@merkahorrosas.com": [
+    "cartera@merkahorrosas.com",
+    "analistatesoreria@merkahorrosas.com",
+    
+  ],
 };
 
 const obtenerJefePorEmpleado = (correo_empleado) => {
@@ -35,8 +50,8 @@ const obtenerJefePorEmpleado = (correo_empleado) => {
     if (empleados.includes(correo_empleado)) {
       return lider;
     }
-  } 
-            //Don Ramiro
+  }
+  //Don Ramiro
   return "operaciones@merkahorrosas.com";
 };
 
@@ -205,18 +220,31 @@ export const crearRequerimiento = async (req, res) => {
                 <tr><td style="font-weight: bold;">Área:</td><td>${area}</td></tr>
                 <tr><td style="font-weight: bold;">Descripción:</td><td>${descripcion}</td></tr>
                 <tr><td style="font-weight: bold;">Procesos:</td><td>${procesos}</td></tr>
-                <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(', ')}</td></tr>
-                <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(', ')}</td></tr>
-                <tr><td style="font-weight: bold;">Centro de Costos:</td><td>${centroCostosArray.join(', ')}</td></tr>
+                <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(
+                  ", "
+                )}</td></tr>
+                <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(
+                  ", "
+                )}</td></tr>
+                <tr><td style="font-weight: bold;">Centro de Costos:</td><td>${centroCostosArray.join(
+                  ", "
+                )}</td></tr>
                 <tr><td style="font-weight: bold;">Monto Estimado:</td><td>$${monto_estimado}</td></tr>
                 <tr><td style="font-weight: bold;">Monto por sede:</td><td>$${monto_sede}</td></tr>
                 <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
                 <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
                 <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
-                <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls.map(url => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`).join('<br>')}</td></tr>
+                <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls
+                  .map(
+                    (url) =>
+                      `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`
+                  )
+                  .join("<br>")}</td></tr>
               </table>
               <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button" style="color: white !important;">Aprobar/Rechazar</a>
+              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(
+                token
+              )}" class="button" style="color: white !important;">Aprobar/Rechazar</a>
               <div style="padding: 10px; font-style: italic;">
                 <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
                 <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
@@ -324,7 +352,15 @@ export const obtenerRequerimientos = async (req, res) => {
 // ✅ Actualizar requerimiento (corregido para manejar voucher)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado, observacionC, voucher, factura, numero_causacion } = req.body;
+  const {
+    estado,
+    observacion,
+    verificado,
+    observacionC,
+    voucher,
+    factura,
+    numero_causacion,
+  } = req.body;
 
   console.log("Actualizando registro con ID:", id);
   console.log("Datos recibidos:", {
@@ -344,8 +380,13 @@ export const actualizarRequerimiento = async (req, res) => {
 
       // Registrar hora del cambio de estado en formato compatible con PostgreSQL
       const now = new Date();
-      const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-      updateData.hora_cambio_estado = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+      const bogotaTime = new Date(
+        now.toLocaleString("en-US", { timeZone: "America/Bogota" })
+      );
+      updateData.hora_cambio_estado = bogotaTime
+        .toISOString()
+        .replace("T", " ")
+        .split(".")[0];
     }
     if (observacion !== undefined) updateData.observacion = observacion;
     if (observacionC !== undefined) updateData.observacionC = observacionC;
@@ -356,9 +397,12 @@ export const actualizarRequerimiento = async (req, res) => {
     if (factura !== undefined) {
       try {
         // Asegurarse de que factura sea un array válido
-        const parsedFactura = typeof factura === "string" ? JSON.parse(factura) : factura;
+        const parsedFactura =
+          typeof factura === "string" ? JSON.parse(factura) : factura;
         if (!Array.isArray(parsedFactura)) {
-          return res.status(400).json({ error: "El campo factura debe ser un array de URLs" });
+          return res
+            .status(400)
+            .json({ error: "El campo factura debe ser un array de URLs" });
         }
         // Opcional: Validar que cada elemento sea una URL válida
         parsedFactura.forEach((url, index) => {
@@ -369,14 +413,18 @@ export const actualizarRequerimiento = async (req, res) => {
         updateData.factura = parsedFactura;
       } catch (e) {
         console.error("Error al parsear factura:", e);
-        return res.status(400).json({ error: "El campo factura debe ser un JSON válido" });
+        return res
+          .status(400)
+          .json({ error: "El campo factura debe ser un JSON válido" });
       }
     }
 
     // Validar y asignar numero_causacion (string)
     if (numero_causacion !== undefined) {
       if (typeof numero_causacion !== "string") {
-        return res.status(400).json({ error: "El campo numero_causacion debe ser un string" });
+        return res
+          .status(400)
+          .json({ error: "El campo numero_causacion debe ser un string" });
       }
       updateData.numero_causacion = numero_causacion;
     }
@@ -430,8 +478,13 @@ export const decidirRequerimiento = async (req, res) => {
 
     // Registrar hora del cambio de estado en formato compatible con PostgreSQL
     const now = new Date();
-    const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-    const horaCambioEstado = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+    const bogotaTime = new Date(
+      now.toLocaleString("en-US", { timeZone: "America/Bogota" })
+    );
+    const horaCambioEstado = bogotaTime
+      .toISOString()
+      .replace("T", " ")
+      .split(".")[0];
 
     const { error: updateError } = await supabase
       .from("Gastos")
@@ -443,7 +496,10 @@ export const decidirRequerimiento = async (req, res) => {
       .eq("token", token);
 
     if (updateError) {
-      console.error("❌ Error al actualizar estado y observación:", updateError);
+      console.error(
+        "❌ Error al actualizar estado y observación:",
+        updateError
+      );
       return res.status(500).json({ error: updateError.message });
     }
 
@@ -457,8 +513,12 @@ export const decidirRequerimiento = async (req, res) => {
         <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
           <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
           <p>Estimado ${data.nombre_completo},</p>
-          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
-          <p><strong>Observación:</strong> ${observacion || "Sin observaciones."}</p>
+          <p>Tu necesidad de conciencia del gasto "<strong>${
+            data.descripcion
+          }</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
+          <p><strong>Observación:</strong> ${
+            observacion || "Sin observaciones."
+          }</p>
           <p><strong>Hora de decisión:</strong> ${horaCambioEstado}</p>
           <div style="padding: 10px; font-style: italic;">
             <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
@@ -495,11 +555,9 @@ export const adjuntarVouchers = async (req, res) => {
     const voucherFiles = req.files["vouchers"];
 
     if (!id || !correo_empleado || !voucherFiles || voucherFiles.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: "Se requieren el id, correo_empleado y al menos un voucher.",
-        });
+      return res.status(400).json({
+        error: "Se requieren el id, correo_empleado y al menos un voucher.",
+      });
     }
 
     // 🟡 Obtener los vouchers actuales
@@ -551,12 +609,10 @@ export const adjuntarVouchers = async (req, res) => {
       return res.status(500).json({ error: updateError.message });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Vouchers adjuntados correctamente",
-        archivos_comprobantes: nuevosVouchers,
-      });
+    return res.status(200).json({
+      message: "Vouchers adjuntados correctamente",
+      archivos_comprobantes: nuevosVouchers,
+    });
   } catch (error) {
     console.error("❌ Error general en adjuntarVouchers:", error);
     return res.status(500).json({ error: error.message });
