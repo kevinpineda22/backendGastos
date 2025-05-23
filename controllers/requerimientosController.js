@@ -16,9 +16,8 @@ const sanitizeFileName = (fileName) => {
 const gruposLideres = {
   "kp0827074@gmail.com": [
     "desarrollo@merkahorrosas.com",
-    "developersmk@merkahorrosas.com",
   ],
-  "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com"],
+  "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com","developersmk@merkahorrosas.com",],
   "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
 
   //Ana Maria
