@@ -3,9 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// --- CONFIGURACIÓN CORREGIDA PARA OUTLOOK/OFFICE 365 ---
+// Se elimina `service: 'gmail'` y se añaden los datos del servidor manualmente.
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE === 'true', // secure:false para STARTTLS en el puerto 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -13,18 +16,22 @@ const transporter = nodemailer.createTransport({
 });
 
 
-export const sendEmail = async (to, subject, htmlContent, attachments = []) => {
+export const sendEmail = async ({ to, subject, htmlContent, attachments = [] }) => {
   try {
-    // Enviar correo con archivo adjunto
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"Merkahorro" <${process.env.EMAIL_USER}>`,
       to,
       subject,
-      html: htmlContent, // Asegúrate de usar la propiedad `html` para correos con diseño
-      attachments, // Aquí agregamos los archivos adjuntos
+      html: htmlContent,
+      attachments,
     });
-    console.log(`📨 Correo enviado a ${to}`);
+
+    console.log(`📨 Correo enviado a ${to}:`, info.messageId);
+    return info; // Devolvemos la información del envío exitoso.
   } catch (error) {
     console.error('❌ Error al enviar el correo:', error);
+    // Es una buena práctica relanzar el error para que la función que llama a sendEmail
+    // sepa que algo salió mal y pueda manejarlo adecuadamente.
+    throw error;
   }
 };
