@@ -275,12 +275,12 @@ export const crearRequerimiento = async (req, res) => {
       });
     }
 
-    await sendEmail(
-      destinatarioEncargado,
-      "Nuevo Requerimiento de Gasto",
-      mensajeEncargado,
-      archivoAdjunto
-    );
+    await sendEmail({
+      to: destinatarioEncargado,
+      subject: "Nuevo Requerimiento de Gasto",
+      htmlContent: mensajeEncargado,
+      attachments: archivoAdjunto,
+    });
 
     return res.status(201).json({
       message:
