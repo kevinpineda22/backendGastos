@@ -23,7 +23,6 @@ export const sendEmail = async ({ to, subject, htmlContent, attachments = [] }) 
       to,
       subject,
       html: htmlContent,
-      text: textContent,
       attachments,
     });
 
