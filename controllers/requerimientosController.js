@@ -258,6 +258,17 @@ export const crearRequerimiento = async (req, res) => {
 </html>
 `;
 
+
+    const textoPlano = `
+      Estimado encargado,
+      Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación.
+      - Nombre: ${nombre_completo}
+      - Área: ${area}
+      - Descripción: ${descripcion}
+      - Monto: $${monto_estimado}
+      Para aprobar o rechazar, visita el siguiente enlace: https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}
+    `;
+
     const archivoAdjunto = [];
     archivoAdjunto.push({
       filename: archivoCotizacion.originalname,
@@ -279,6 +290,7 @@ export const crearRequerimiento = async (req, res) => {
       to: destinatarioEncargado,
       subject: "Nuevo Requerimiento de Gasto",
       htmlContent: mensajeEncargado,
+      textContent: textoPlano,
       attachments: archivoAdjunto,
     });
 
