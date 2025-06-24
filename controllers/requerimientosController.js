@@ -18,7 +18,7 @@ const gruposLideres = {
     "desarrollo@merkahorrosas.com",
   ],
   "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com","developersmk@merkahorrosas.com",],
-  "test-9ls9meerc@srv1.mail-tester.com": ["johanmerkahorro777@gmail.com"],
+  "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
 
   //Ana Maria
   "contabilidad1@merkahorrosas.com": ["analistacontable@merkahorrosas.com"],
