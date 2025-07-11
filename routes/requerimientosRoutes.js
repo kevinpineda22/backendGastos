@@ -47,6 +47,6 @@ router.put('/:id', actualizarRequerimiento);
 router.get('/obtenerRequerimientos', obtenerRequerimientos);
 router.get('/historial', obtenerHistorialGastos);
 
-router.put('/requerimientos/editar-cotizacion/:id', upload.single('archivo_cotizacion'), editarCotizacion);
+router.put('/editar-cotizacion/:id', upload.single('archivo_cotizacion'), editarCotizacion);
 
 export default router;
