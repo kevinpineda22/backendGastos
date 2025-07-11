@@ -829,53 +829,158 @@ export const actualizarEstadoCartera = async (req, res) => {
 
 // ✅ NUEVO: Editar solo el archivo de cotización de un requerimiento
 export const editarCotizacion = async (req, res) => {
-    const { id } = req.params;
-    const archivoCotizacion = req.file;
+  const { id } = req.params;
+  const archivoCotizacion = req.file;
 
-    if (!archivoCotizacion) {
-        return res.status(400).json({ error: "El archivo de cotización es obligatorio." });
+  if (!id || !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
+
+  if (!archivoCotizacion) {
+    return res.status(400).json({ error: "El archivo de cotización es obligatorio." });
+  }
+
+  const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+  if (!allowedTypes.includes(archivoCotizacion.mimetype)) {
+    return res.status(400).json({ error: "Solo se permiten archivos PDF o Excel." });
+  }
+
+  try {
+    // Obtener datos del requerimiento para notificación y eliminación del archivo anterior
+    const { data: requerimiento, error: fetchError } = await supabase
+      .from("Gastos")
+      .select("archivo_cotizacion, nombre_completo, descripcion, correo_empleado, token")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !requerimiento) {
+      console.error("❌ Error al obtener el requerimiento:", fetchError);
+      return res.status(404).json({ error: "Requerimiento no encontrado." });
     }
 
-    try {
-        // Opcional: podrías querer eliminar el archivo antiguo de Supabase Storage aquí
+    // Subir el nuevo archivo
+    const uniqueFileName = `${Date.now()}_${sanitizeFileName(archivoCotizacion.originalname)}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("cotizaciones")
+      .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+        contentType: archivoCotizacion.mimetype,
+      });
 
-        const uniqueFileName = `${Date.now()}_${sanitizeFileName(archivoCotizacion.originalname)}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("cotizaciones")
-            .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
-                contentType: archivoCotizacion.mimetype,
-            });
-
-        if (uploadError) {
-            console.error("❌ Error al subir la nueva cotización a Supabase:", uploadError);
-            return res.status(500).json({ error: uploadError.message });
-        }
-
-        const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
-
-        const { data: updateData, error: updateError } = await supabase
-            .from("Gastos")
-            .update({ archivo_cotizacion: archivoCotizacionUrl })
-            .eq("id", id)
-            .select()
-            .single();
-
-        if (updateError) {
-            console.error("❌ Error al actualizar la URL de la cotización en Supabase:", updateError);
-            return res.status(500).json({ error: updateError.message });
-        }
-        
-        if (!updateData) {
-            return res.status(404).json({ error: "Requerimiento no encontrado." });
-        }
-
-        return res.status(200).json({
-            message: "Cotización actualizada correctamente.",
-            filePath: archivoCotizacionUrl, // Devuelve la nueva URL al frontend
-        });
-
-    } catch (err) {
-        console.error("❌ Error en el controlador editarCotizacion:", err);
-        return res.status(500).json({ error: "Hubo un problema al actualizar la cotización." });
+    if (uploadError) {
+      console.error("❌ Error al subir la nueva cotización a Supabase:", uploadError);
+      return res.status(500).json({ error: uploadError.message });
     }
+
+    const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+
+    // Eliminar el archivo anterior si existe
+    if (requerimiento.archivo_cotizacion) {
+      const oldFilePath = requerimiento.archivo_cotizacion.split("/cotizaciones/")[1];
+      const { error: deleteError } = await supabase.storage
+        .from("cotizaciones")
+        .remove([`cotizaciones/${oldFilePath}`]);
+
+      if (deleteError) {
+        console.warn("⚠️ Error al eliminar el archivo anterior:", deleteError);
+      }
+    }
+
+    // Actualizar la base de datos
+    const { data: updateData, error: updateError } = await supabase
+      .from("Gastos")
+      .update({ archivo_cotizacion: archivoCotizacionUrl })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("❌ Error al actualizar la URL de la cotización en Supabase:", updateError);
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    if (!updateData) {
+      return res.status(404).json({ error: "Requerimiento no encontrado." });
+    }
+
+    // Enviar notificación al líder
+    const destinatarioEncargado = obtenerJefePorEmpleado(requerimiento.correo_empleado);
+    const mensajeEncargado = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    table { width: 100%; border-spacing: 0; background-color: #ffffff; }
+    td { padding: 15px; }
+    h2 { font-size: 24px; color: rgb(255, 255, 255); }
+    .button { 
+      background-color: #210d65; 
+      color: white !important; 
+      padding: 10px 20px; 
+      text-decoration: none; 
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
+          <tr>
+            <td style="text-align: center; background-color: #210d65; color: white;">
+              <h2>Cotización Actualizada</h2>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>Estimado encargado,</p>
+              <p>Se ha actualizado la cotización del requerimiento con ID ${id}. Aquí están los detalles:</p>
+              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
+                <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${requerimiento.nombre_completo}</td></tr>
+                <tr><td style="font-weight: bold;">Descripción:</td><td>${requerimiento.descripcion}</td></tr>
+                <tr><td style="font-weight: bold;">Nueva Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
+              </table>
+              <p style="margin-top: 20px;">Para revisar el requerimiento, haz clic en el siguiente enlace:</p>
+              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(
+                requerimiento.token
+              )}" class="button" style="color: white !important;">Revisar Requerimiento</a>
+              <div style="padding: 10px; font-style: italic;">
+                <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+                <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+    await sendEmail({
+      to: destinatarioEncargado,
+      subject: "Cotización Actualizada en Requerimiento de Gasto",
+      htmlContent: mensajeEncargado,
+      attachments: [
+        {
+          filename: archivoCotizacion.originalname,
+          content: archivoCotizacion.buffer,
+          encoding: "base64",
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      message: "Cotización actualizada correctamente.",
+      archivo_cotizacion: archivoCotizacionUrl,
+    });
+  } catch (err) {
+    console.error("❌ Error en el controlador editarCotizacion:", err);
+    return res.status(500).json({ error: "Hubo un problema al actualizar la cotización." });
+  }
 };
