@@ -9,7 +9,8 @@ import {
   eliminarVoucher,
   enviarVouchers,
   eliminarRequerimiento,
-  actualizarEstadoCartera // Nueva importación
+  actualizarEstadoCartera, // Nueva importación
+  editarCotizacion
 } from '../controllers/requerimientosController.js';
 import multer from 'multer';
 
@@ -45,5 +46,7 @@ router.post('/decidirRequerimiento', decidirRequerimiento);
 router.put('/:id', actualizarRequerimiento);
 router.get('/obtenerRequerimientos', obtenerRequerimientos);
 router.get('/historial', obtenerHistorialGastos);
+
+router.put('/requerimientos/editar-cotizacion/:id', upload.single('archivo_cotizacion'), editarCotizacion);
 
 export default router;

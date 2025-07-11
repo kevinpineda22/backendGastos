@@ -69,6 +69,7 @@ export const crearRequerimiento = async (req, res) => {
     tiempo_fecha_pago,
     correo_empleado,
     monto_sede,
+    observacion, // Nuevo campo
   } = req.body;
 
   const archivoCotizacion = req.files["archivo_cotizacion"]
@@ -168,6 +169,7 @@ export const crearRequerimiento = async (req, res) => {
           correo_empleado,
           token,
           estado: "Pendiente",
+          observacion, // Incluir el nuevo campo
         },
       ])
       .select();
@@ -233,6 +235,7 @@ export const crearRequerimiento = async (req, res) => {
                 <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
                 <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
                 <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
+                <tr><td style="font-weight: bold;">Observación:</td><td>${observacion || "Sin observación"}</td></tr>
                 <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls
                   .map(
                     (url) =>
@@ -286,6 +289,7 @@ export const crearRequerimiento = async (req, res) => {
       message:
         "Tu solicitud de gasto ha sido recibida correctamente. Nuestro equipo está revisando los detalles.",
       token,
+      archivo_cotizacion: archivoCotizacionUrl, // Devolver la URL para el frontend
     });
   } catch (error) {
     console.error("❌ Error en la creación del requerimiento:", error);
@@ -821,4 +825,57 @@ export const actualizarEstadoCartera = async (req, res) => {
     console.error("❌ Error en actualizarEstadoCartera:", error);
     return res.status(500).json({ error: error.message });
   }
+};
+
+// ✅ NUEVO: Editar solo el archivo de cotización de un requerimiento
+export const editarCotizacion = async (req, res) => {
+    const { id } = req.params;
+    const archivoCotizacion = req.file;
+
+    if (!archivoCotizacion) {
+        return res.status(400).json({ error: "El archivo de cotización es obligatorio." });
+    }
+
+    try {
+        // Opcional: podrías querer eliminar el archivo antiguo de Supabase Storage aquí
+
+        const uniqueFileName = `${Date.now()}_${sanitizeFileName(archivoCotizacion.originalname)}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("cotizaciones")
+            .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+                contentType: archivoCotizacion.mimetype,
+            });
+
+        if (uploadError) {
+            console.error("❌ Error al subir la nueva cotización a Supabase:", uploadError);
+            return res.status(500).json({ error: uploadError.message });
+        }
+
+        const archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+
+        const { data: updateData, error: updateError } = await supabase
+            .from("Gastos")
+            .update({ archivo_cotizacion: archivoCotizacionUrl })
+            .eq("id", id)
+            .select()
+            .single();
+
+        if (updateError) {
+            console.error("❌ Error al actualizar la URL de la cotización en Supabase:", updateError);
+            return res.status(500).json({ error: updateError.message });
+        }
+        
+        if (!updateData) {
+            return res.status(404).json({ error: "Requerimiento no encontrado." });
+        }
+
+        return res.status(200).json({
+            message: "Cotización actualizada correctamente.",
+            filePath: archivoCotizacionUrl, // Devuelve la nueva URL al frontend
+        });
+
+    } catch (err) {
+        console.error("❌ Error en el controlador editarCotizacion:", err);
+        return res.status(500).json({ error: "Hubo un problema al actualizar la cotización." });
+    }
 };
