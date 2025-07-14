@@ -950,7 +950,7 @@ export const editarCotizacion = async (req, res) => {
           <tr>
             <td>
               <p>Estimado encargado,</p>
-              <p>Se ha actualizado el requerimiento con ID ${id}. Aquí están los detalles:</p>
+              <p>Se ha actualizado el requerimiento. Aquí están los detalles:</p>
               <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
                 <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${requerimiento.nombre_completo}</td></tr>
                 <tr><td style="font-weight: bold;">Descripción:</td><td>${requerimiento.descripcion}</td></tr>
