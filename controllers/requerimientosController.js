@@ -69,7 +69,7 @@ export const crearRequerimiento = async (req, res) => {
     tiempo_fecha_pago,
     correo_empleado,
     monto_sede,
-    observacion, // Nuevo campo
+    observacion_responsable, // Nuevo campo
   } = req.body;
 
   const archivoCotizacion = req.files["archivo_cotizacion"]
@@ -169,7 +169,7 @@ export const crearRequerimiento = async (req, res) => {
           correo_empleado,
           token,
           estado: "Pendiente",
-          observacion, // Incluir el nuevo campo
+          observacion_responsable, // Incluir el nuevo campo
         },
       ])
       .select();
@@ -235,7 +235,7 @@ export const crearRequerimiento = async (req, res) => {
                 <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
                 <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
                 <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
-                <tr><td style="font-weight: bold;">Observación:</td><td>${observacion || "Sin observación"}</td></tr>
+                <tr><td style="font-weight: bold;">Observación:</td><td>${observacion_responsable || "Sin observación"}</td></tr>
                 <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls
                   .map(
                     (url) =>
