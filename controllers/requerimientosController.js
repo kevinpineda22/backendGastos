@@ -828,7 +828,6 @@ export const actualizarEstadoCartera = async (req, res) => {
 };
 
 // ✅ NUEVO: Editar el archivo de cotización y la observación de un requerimiento
-// ✅ NUEVO: Editar el archivo de cotización y la observación de un requerimiento
 export const editarCotizacion = async (req, res) => {
   const { id } = req.params;
   const archivoCotizacion = req.file;
@@ -850,10 +849,9 @@ export const editarCotizacion = async (req, res) => {
 
   try {
     // Obtener datos del requerimiento para notificación y eliminación del archivo anterior
-    // ***** CORRECCIÓN 1: Selecciona 'observacion_responsable' en lugar de 'observacion' *****
     const { data: requerimiento, error: fetchError } = await supabase
       .from("Gastos")
-      .select("archivo_cotizacion, nombre_completo, descripcion, correo_empleado, token, observacion_responsable") // Cambiado a observacion_responsable
+      .select("archivo_cotizacion, nombre_completo, descripcion, correo_empleado, token, observacion")
       .eq("id", id)
       .single();
 
@@ -882,8 +880,6 @@ export const editarCotizacion = async (req, res) => {
 
       // Eliminar el archivo anterior si existe
       if (requerimiento.archivo_cotizacion) {
-        // Asumiendo que sanitizeFileName está definido en algún lugar o que el nombre de archivo no tiene barras inclinadas.
-        // Si el URL es del tipo https://.../cotizaciones/nombre_archivo.pdf
         const oldFilePath = requerimiento.archivo_cotizacion.split("/cotizaciones/")[1];
         const { error: deleteError } = await supabase.storage
           .from("cotizaciones")
@@ -898,8 +894,7 @@ export const editarCotizacion = async (req, res) => {
     // Actualizar la base de datos con la cotización y/o observación
     const updateData = {
       archivo_cotizacion: archivoCotizacionUrl,
-      // ***** CORRECCIÓN 2: Actualiza 'observacion_responsable' en lugar de 'observacion' *****
-      observacion_responsable: observacion || requerimiento.observacion_responsable, // Actualizar solo si se proporciona una nueva observación
+      observacion: observacion || requerimiento.observacion, // Actualizar solo si se proporciona una nueva observación
     };
 
     const { data: updatedData, error: updateError } = await supabase
@@ -931,11 +926,11 @@ export const editarCotizacion = async (req, res) => {
     table { width: 100%; border-spacing: 0; background-color: #ffffff; }
     td { padding: 15px; }
     h2 { font-size: 24px; color: rgb(255, 255, 255); }
-    .button {
-      background-color: #210d65;
-      color: white !important;
-      padding: 10px 20px;
-      text-decoration: none;
+    .button { 
+      background-color: #210d65; 
+      color: white !important; 
+      padding: 10px 20px; 
+      text-decoration: none; 
       border-radius: 5px;
       display: inline-block;
     }
@@ -959,7 +954,8 @@ export const editarCotizacion = async (req, res) => {
                 <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${requerimiento.nombre_completo}</td></tr>
                 <tr><td style="font-weight: bold;">Descripción:</td><td>${requerimiento.descripcion}</td></tr>
                 ${archivoCotizacion ? `<tr><td style="font-weight: bold;">Nueva Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>` : ""}
-                ${observacion ? `<tr><td style="font-weight: bold;">Nueva Observación (Responsable):</td><td>${observacion}</td></tr>` : ""} </table>
+                ${observacion ? `<tr><td style="font-weight: bold;">Nueva Observación:</td><td>${observacion}</td></tr>` : ""}
+              </table>
               <div style="padding: 10px; font-style: italic;">
                 <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
                 <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
@@ -974,7 +970,6 @@ export const editarCotizacion = async (req, res) => {
 </html>
 `;
 
-    // Asumo que 'sendEmail' y 'obtenerJefePorEmpleado' están definidos en otro lugar.
     await sendEmail({
       to: destinatarioEncargado,
       subject: "Actualización de Requerimiento de Gasto",
@@ -991,18 +986,10 @@ export const editarCotizacion = async (req, res) => {
     return res.status(200).json({
       message: "Requerimiento actualizado correctamente.",
       archivo_cotizacion: archivoCotizacionUrl,
-      // ***** CORRECCIÓN 3: Retorna 'observacion_responsable' en la respuesta *****
-      observacion: observacion || requerimiento.observacion_responsable, // Retornamos 'observacion' para mantener compatibilidad con el frontend si lo espera, pero su valor viene de observacion_responsable
-      // Si tu frontend tiene un campo 'observacion_responsable', sería mejor:
-      // observacion_responsable: observacion || requerimiento.observacion_responsable,
+      observacion: observacion || requerimiento.observacion,
     });
   } catch (err) {
     console.error("❌ Error en el controlador editarCotizacion:", err);
     return res.status(500).json({ error: "Hubo un problema al actualizar el requerimiento." });
   }
 };
-
-// Asegúrate de que 'sanitizeFileName' esté definido en algún lugar de tu código.
-function sanitizeFileName(filename) {
-  return filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-}
