@@ -54,21 +54,51 @@ export const actualizarRequerimiento = async (req, res) => {
     // Obtener permisos del usuario
     const currentUserPermissions = userPermissions[correo_empleado] || { role: "admin" };
 
-    const updateData = {};
-    if (estado !== undefined && (currentUserPermissions.role === "director" || currentUserPermissions.role === "admin")) {
-      updateData.estado = estado;
-      const now = new Date();
-      const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-      updateData.hora_cambio_estado = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+    // Obtener el registro actual para comparar valores
+    const { data: currentGasto, error: fetchError } = await supabase
+      .from("Gastos")
+      .select("estado, observacionC, factura, numero_causacion")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !currentGasto) {
+      return res.status(404).json({ error: "Requerimiento no encontrado" });
     }
+
+    const updateData = {};
+    const now = new Date();
+    const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+    const timestamp = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+
+    // Lógica para hora_cambio_estado (Director/Admin cambiando 'estado')
+    if (estado !== undefined && (currentUserPermissions.role === "director" || currentUserPermissions.role === "admin")) {
+      // Solo actualizar si el estado realmente cambió
+      if (estado !== currentGasto.estado) {
+        updateData.estado = estado;
+        updateData.hora_cambio_estado = timestamp;
+      }
+    }
+
     if (observacion !== undefined) updateData.observacion = observacion;
-    if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
     if (voucher !== undefined) updateData.voucher = voucher;
 
+    // Lógica para hora_ultima_modificacion_contabilidad (Contabilidad/Admin cambiando campos específicos)
+    let contabilidadFieldsChanged = false;
+
+    if (observacionC !== undefined) {
+      if (observacionC !== currentGasto.observacionC) {
+        updateData.observacionC = observacionC;
+        contabilidadFieldsChanged = true;
+      }
+    }
+
+    let parsedFactura = [];
+    let currentFacturaString = currentGasto.factura ? JSON.stringify(currentGasto.factura) : JSON.stringify([]);
+
     if (factura !== undefined) {
       try {
-        const parsedFactura = typeof factura === "string" ? JSON.parse(factura) : factura;
+        parsedFactura = typeof factura === "string" ? JSON.parse(factura) : factura;
         if (!Array.isArray(parsedFactura)) {
           return res.status(400).json({ error: "El campo factura debe ser un array de URLs" });
         }
@@ -77,7 +107,11 @@ export const actualizarRequerimiento = async (req, res) => {
             throw new Error(`La URL en la posición ${index} no es válida`);
           }
         });
-        updateData.factura = parsedFactura;
+        const newFacturaString = JSON.stringify(parsedFactura);
+        if (newFacturaString !== currentFacturaString) {
+          updateData.factura = parsedFactura;
+          contabilidadFieldsChanged = true;
+        }
       } catch (e) {
         return res.status(400).json({ error: "El campo factura debe ser un JSON válido" });
       }
@@ -87,14 +121,20 @@ export const actualizarRequerimiento = async (req, res) => {
       if (typeof numero_causacion !== "string") {
         return res.status(400).json({ error: "El campo numero_causacion debe ser un string" });
       }
-      updateData.numero_causacion = numero_causacion;
+      if (numero_causacion !== currentGasto.numero_causacion) {
+        updateData.numero_causacion = numero_causacion;
+        contabilidadFieldsChanged = true;
+      }
     }
 
-    const hasContabilidadRelatedFieldChanged = observacionC !== undefined || factura !== undefined || numero_causacion !== undefined;
-    if (hasContabilidadRelatedFieldChanged) {
-      const now = new Date();
-      const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-      updateData.hora_ultima_modificacion_contabilidad = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+    // Solo actualizar hora_ultima_modificacion_contabilidad si un campo relevante cambió Y el usuario tiene el rol de contabilidad/admin
+    if (contabilidadFieldsChanged && (currentUserPermissions.role === "contabilidad" || currentUserPermissions.role === "admin")) {
+      updateData.hora_ultima_modificacion_contabilidad = timestamp;
+    }
+
+    // Si no hay campos para actualizar, retornar temprano
+    if (Object.keys(updateData).length === 0) {
+      return res.status(200).json({ message: "No hay cambios para actualizar." });
     }
 
     const { data, error } = await supabase
@@ -206,7 +246,7 @@ export const crearRequerimiento = async (req, res) => {
           estado: "Pendiente",
           observacion_responsable,
         },
-        ])
+      ])
       .select();
 
     if (error) {
@@ -219,67 +259,67 @@ export const crearRequerimiento = async (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-    table { width: 100%; border-spacing: 0; background-color: #ffffff; }
-    td { padding: 15px; }
-    h2 { font-size: 24px; color: rgb(255, 255, 255); }
-    .button { 
-      background-color: #210d65; 
-      color: white !important; 
-      padding: 10px 20px; 
-      text-decoration: none; 
-      border-radius: 5px;
-      display: inline-block;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    table { width: 100%; border-spacing: 0; background-color: #ffffff; }
+    td { padding: 15px; }
+    h2 { font-size: 24px; color: rgb(255, 255, 255); }
+    .button { 
+      background-color: #210d65; 
+      color: white !important; 
+      padding: 10px 20px; 
+      text-decoration: none; 
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
-  <table cellpadding="0" cellspacing="0">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
-          <tr>
-            <td style="text-align: center; background-color: #210d65; color: white;">
-              <h2>Nuevo Requerimiento de Gasto</h2>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p>Estimado encargado,</p>
-              <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
-              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${nombre_completo}</td></tr>
-                <tr><td style="font-weight: bold;">Área:</td><td>${area}</td></tr>
-                <tr><td style="font-weight: bold;">Descripción:</td><td>${descripcion}</td></tr>
-                <tr><td style="font-weight: bold;">Procesos:</td><td>${procesos}</td></tr>
-                <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(", ")}</td></tr>
-                <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(", ")}</td></tr>
-                <tr><td столов: bold;">Centro de Costos:</td><td>${centroCostosArray.join(", ")}</td></tr>
-                <tr><td style="font-weight: bold;">Monto Estimado:</td><td>$${monto_estimado}</td></tr>
-                <tr><td style="font-weight: bold;">Monto por sede:</td><td>$${monto_sede}</td></tr>
-                <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
-                <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
-                <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
-                <tr><td style="font-weight: bold;">Observación:</td><td>${observacion_responsable || "Sin observación"}</td></tr>
-                <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls
-                  .map((url) => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`)
-                  .join("<br>")}</td></tr>
-              </table>
-              <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button" style="color: white !important;">Aprobar/Rechazar</a>
-              <div style="padding: 10px; font-style: italic;">
-                <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-                <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
+          <tr>
+            <td style="text-align: center; background-color: #210d65; color: white;">
+              <h2>Nuevo Requerimiento de Gasto</h2>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>Estimado encargado,</p>
+              <p>Se ha creado un nuevo requerimiento de gasto que requiere tu aprobación. Aquí están los detalles:</p>
+              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
+                <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${nombre_completo}</td></tr>
+                <tr><td style="font-weight: bold;">Área:</td><td>${area}</td></tr>
+                <tr><td style="font-weight: bold;">Descripción:</td><td>${descripcion}</td></tr>
+                <tr><td style="font-weight: bold;">Procesos:</td><td>${procesos}</td></tr>
+                <tr><td style="font-weight: bold;">Sedes:</td><td>${sedesArray.join(", ")}</td></tr>
+                <tr><td style="font-weight: bold;">Unidad de Negocio:</td><td>${unidadArray.join(", ")}</td></tr>
+                <tr><td столов: bold;">Centro de Costos:</td><td>${centroCostosArray.join(", ")}</td></tr>
+                <tr><td style="font-weight: bold;">Monto Estimado:</td><td>$${monto_estimado}</td></tr>
+                <tr><td style="font-weight: bold;">Monto por sede:</td><td>$${monto_sede}</td></tr>
+                <tr><td style="font-weight: bold;">Anticipo:</td><td>$${anticipo}</td></tr>
+                <tr><td style="font-weight: bold;">Fecha tiempo estimado de pago:</td><td>$${tiempo_fecha_pago}</td></tr>
+                <tr><td style="font-weight: bold;">Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>
+                <tr><td style="font-weight: bold;">Observación:</td><td>${observacion_responsable || "Sin observación"}</td></tr>
+                <tr><td style="font-weight: bold;">Archivos del Proveedor:</td><td>${archivosProveedorUrls
+        .map((url) => `<a href="${url}" target="_blank" style="color: #3498db;">Ver archivo proveedor</a>`)
+        .join("<br>")}</td></tr>
+              </table>
+              <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
+              <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(token)}" class="button" style="color: white !important;">Aprobar/Rechazar</a>
+              <div style="padding: 10px; font-style: italic;">
+                <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+                <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 `;
@@ -389,26 +429,26 @@ export const decidirRequerimiento = async (req, res) => {
     }
 
     const mensajeSolicitante = `
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
-          <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
-          <p>Estimado ${data.nombre_completo},</p>
-          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
-          <p><strong>Observación:</strong> ${observacion || "Sin observaciones."}</p>
-          <p><strong>Hora de decisión:</strong> ${horaCambioEstado}</p>
-          <div style="padding: 10px; font-style: italic;">
-            <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-            <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+        <div style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 10px;">
+          <h2 style="color: #210d65;">Decisión sobre la responsabilidad del gasto.</h2>
+          <p>Estimado ${data.nombre_completo},</p>
+          <p>Tu necesidad de conciencia del gasto "<strong>${data.descripcion}</strong>" ha sido considerada <strong>${decision.toLowerCase()}</strong>.</p>
+          <p><strong>Observación:</strong> ${observacion || "Sin observaciones."}</p>
+          <p><strong>Hora de decisión:</strong> ${horaCambioEstado}</p>
+          <div style="padding: 10px; font-style: italic;">
+            <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+            <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
     await sendEmail(
       data.correo_empleado,
@@ -503,53 +543,53 @@ export const enviarVouchers = async (req, res) => {
     const nombreDestinatario = data.nombre_completo || "Usuario/a";
     const linksHTML = data.vouchers
       .map((url, idx) => `
-      <p style="text-align: center; margin: 12px 0;">
-        <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
-          Ver Voucher ${idx + 1}
-        </a>
-      </p>
-    `)
+      <p style="text-align: center; margin: 12px 0;">
+        <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
+          Ver Voucher ${idx + 1}
+        </a>
+      </p>
+    `)
       .join("");
 
     const mensajeHTML = `
-      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Reenvío de Vouchers - Supermercado Merkahorro</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f4f4f4">
-          <tr>
-            <td align="center">
-              <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <tr>
-                  <td bgcolor="#210d65" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                    <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Vouchers</h1>
-                    <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 30px; color: #333333;">
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a ${nombreDestinatario},</p>
-                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Te compartimos los comprobantes de voucher correspondientes a tu gasto:</p>
-                    ${linksHTML}
-                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
-                    <p style="font-size: 12px; color: #666666; margin: 0;">© 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
+      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+      <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reenvío de Vouchers - Supermercado Merkahorro</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f4f4f4">
+          <tr>
+            <td align="center">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <tr>
+                  <td bgcolor="#210d65" style="padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Reenvío de Vouchers</h1>
+                    <p style="color: #d1d5db; font-size: 14px; margin: 5px 0 0;">Supermercado Merkahorro S.A.S.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 30px; color: #333333;">
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Estimado/a ${nombreDestinatario},</p>
+                    <p style="font-size: 16px; line-height: 24px; margin: 0 0 15px;">Te compartimos los comprobantes de voucher correspondientes a tu gasto:</p>
+                    ${linksHTML}
+                    <p style="font-size: 14px; line-height: 20px; color: #666666; margin: 20px 0 0;">Si tienes alguna duda o necesitas asistencia, no dudes en contactar al equipo de soporte.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td bgcolor="#e5e7eb" style="padding: 20px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <p style="font-size: 12px; color: #666666; margin: 0;">© 2025 Supermercado Merkahorro S.A.S. Todos los derechos reservados.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
 
     await sendEmail(
       correo_empleado,
@@ -746,53 +786,53 @@ export const editarCotizacion = async (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-    table { width: 100%; border-spacing: 0; background-color: #ffffff; }
-    td { padding: 15px; }
-    h2 { font-size: 24px; color: rgb(255, 255, 255); }
-    .button {
-      background-color: #210d65;
-      color: white !important;
-      padding: 10px 20px;
-      text-decoration: none;
-      border-radius: 5px;
-      display: inline-block;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    table { width: 100%; border-spacing: 0; background-color: #ffffff; }
+    td { padding: 15px; }
+    h2 { font-size: 24px; color: rgb(255, 255, 255); }
+    .button {
+      background-color: #210d65;
+      color: white !important;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
-  <table cellpadding="0" cellspacing="0">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
-          <tr>
-            <td style="text-align: center; background-color: #210d65; color: white;">
-              <h2>Actualización de Requerimiento</h2>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p>Estimado encargado,</p>
-              <p>Se ha actualizado el requerimiento. Aquí están los detalles:</p>
-              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
-                <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${requerimiento.nombre_completo}</td></tr>
-                <tr><td style="font-weight: bold;">Descripción:</td><td>${requerimiento.descripcion}</td></tr>
-                ${archivoCotizacion ? `<tr><td style="font-weight: bold;">Nueva Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>` : ""}
-                ${observacion ? `<tr><td style="font-weight: bold;">Nueva Observación (Responsable):</td><td>${observacion}</td></tr>` : ""}
-              </table>
-              <div style="padding: 10px; font-style: italic;">
-                <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
-                <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="20" cellspacing="0" style="border: 1px solid #dddddd; border-radius: 10px;">
+          <tr>
+            <td style="text-align: center; background-color: #210d65; color: white;">
+              <h2>Actualización de Requerimiento</h2>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>Estimado encargado,</p>
+              <p>Se ha actualizado el requerimiento. Aquí están los detalles:</p>
+              <table cellpadding="5" cellspacing="0" width="100%" style="border-collapse: collapse; margin-top: 20px;">
+                <tr><td style="font-weight: bold;">Nombre Completo:</td><td>${requerimiento.nombre_completo}</td></tr>
+                <tr><td style="font-weight: bold;">Descripción:</td><td>${requerimiento.descripcion}</td></tr>
+                ${archivoCotizacion ? `<tr><td style="font-weight: bold;">Nueva Cotización:</td><td><a href="${archivoCotizacionUrl}" target="_blank" style="color: #3498db;">Ver Cotización</a></td></tr>` : ""}
+                ${observacion ? `<tr><td style="font-weight: bold;">Nueva Observación (Responsable):</td><td>${observacion}</td></tr>` : ""}
+              </table>
+              <div style="padding: 10px; font-style: italic;">
+                <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
+                <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 `;
