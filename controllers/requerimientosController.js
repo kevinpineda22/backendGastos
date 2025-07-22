@@ -600,11 +600,11 @@ export const enviarVouchers = async (req, res) => {
       </html>
     `;
 
-    await sendEmail(
-      correo_empleado,
-      "Vouchers adjuntos - Merkahorro",
-      mensajeHTML
-    );
+    await sendEmail({
+      to: correo_empleado,
+      subject: "Vouchers adjuntos - Merkahorro",
+      htmlContent: mensajeHTML
+    });
 
     return res.status(200).json({ message: "Vouchers enviados correctamente." });
   } catch (err) {
