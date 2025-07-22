@@ -43,7 +43,7 @@ const userPermissions = {
 
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado, observacionC, voucher, factura, numero_causacion, correo_empleado } = req.body;
+  const { estado, observacion, verificado, observacionC, voucher, factura, numero_causacion, categoria_gasto, correo_empleado } = req.body;
 
   try {
     // Validar correo_empleado
@@ -57,7 +57,7 @@ export const actualizarRequerimiento = async (req, res) => {
     // Obtener el registro actual para comparar valores
     const { data: currentGasto, error: fetchError } = await supabase
       .from("Gastos")
-      .select("estado, observacionC, factura, numero_causacion")
+      .select("estado, observacionC, factura, numero_causacion, categoria_gasto")
       .eq("id", id)
       .single();
 
@@ -72,7 +72,6 @@ export const actualizarRequerimiento = async (req, res) => {
 
     // Lógica para hora_cambio_estado (Director/Admin cambiando 'estado')
     if (estado !== undefined && (currentUserPermissions.role === "director" || currentUserPermissions.role === "admin")) {
-      // Solo actualizar si el estado realmente cambió
       if (estado !== currentGasto.estado) {
         updateData.estado = estado;
         updateData.hora_cambio_estado = timestamp;
@@ -123,6 +122,16 @@ export const actualizarRequerimiento = async (req, res) => {
       }
       if (numero_causacion !== currentGasto.numero_causacion) {
         updateData.numero_causacion = numero_causacion;
+        contabilidadFieldsChanged = true;
+      }
+    }
+
+    if (categoria_gasto !== undefined && (currentUserPermissions.role === "contabilidad" || currentUserPermissions.role === "admin")) {
+      if (typeof categoria_gasto !== "string") {
+        return res.status(400).json({ error: "El campo categoria_gasto debe ser un string" });
+      }
+      if (categoria_gasto !== currentGasto.categoria_gasto) {
+        updateData.categoria_gasto = categoria_gasto;
         contabilidadFieldsChanged = true;
       }
     }
