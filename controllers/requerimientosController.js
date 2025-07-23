@@ -868,3 +868,75 @@ export const editarCotizacion = async (req, res) => {
     return res.status(500).json({ error: "Hubo un problema al actualizar el requerimiento." });
   }
 };
+
+export const editarTiempoFechaPago = async (req, res) => {
+  const { id } = req.params;
+  const { tiempo_fecha_pago, correo_empleado } = req.body;
+
+  // Validar ID
+  if (!id || !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
+
+  // Validar tiempo_fecha_pago y correo_empleado
+  if (!tiempo_fecha_pago || !correo_empleado) {
+    return res.status(400).json({ error: "Se requieren tiempo_fecha_pago y correo_empleado." });
+  }
+
+  // Validar formato de fecha
+  const isValidDate = !isNaN(Date.parse(tiempo_fecha_pago));
+  if (!isValidDate) {
+    return res.status(400).json({ error: "Formato de fecha inválido. Usa YYYY-MM-DD." });
+  }
+
+  try {
+    // Obtener el registro actual para comparar valores
+    const { data: requerimiento, error: fetchError } = await supabase
+      .from("Gastos")
+      .select("tiempo_fecha_pago")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !requerimiento) {
+      return res.status(404).json({ error: "Requerimiento no encontrado." });
+    }
+
+    // Verificar si hay cambios
+    if (tiempo_fecha_pago === requerimiento.tiempo_fecha_pago) {
+      return res.status(200).json({ message: "No hay cambios para actualizar." });
+    }
+
+    // Preparar datos para actualizar
+    const updateData = {
+      tiempo_fecha_pago,
+    };
+
+    // Registrar hora de última modificación
+    const now = new Date();
+    const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+    updateData.hora_ultima_modificacion_contabilidad = bogotaTime.toISOString().replace("T", " ").split(".")[0];
+
+    // Actualizar el registro en Supabase
+    const { data: updatedData, error: updateError } = await supabase
+      .from("Gastos")
+      .update(updateData)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    if (!updatedData) {
+      return res.status(404).json({ error: "Requerimiento no encontrado." });
+    }
+
+    return res.status(200).json({
+      message: "Tiempo/Fecha de Pago actualizado correctamente.",
+      tiempo_fecha_pago,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: "Hubo un problema al actualizar el tiempo/fecha de pago." });
+  }
+};
