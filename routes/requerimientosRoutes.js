@@ -50,5 +50,5 @@ router.get('/historial', obtenerHistorialGastos);
 
 router.put('/editar-cotizacion/:id', upload.single('archivo_cotizacion'), editarCotizacion);
 
-router.put('/requerimientos/editar-tiempo-fecha-pago/:id', editarTiempoFechaPago);
+router.put('/editar-tiempo-fecha-pago/:id', editarTiempoFechaPago);
 export default router;
