@@ -391,15 +391,31 @@ export const obtenerHistorialGastos = async (req, res) => {
 
 export const obtenerRequerimientos = async (req, res) => {
   try {
-    const { data, error } = await supabase
+    // 1. Obtener los parámetros de consulta (query parameters) de la URL
+    const { fechaInicio, fechaFin } = req.query;
+
+    let query = supabase
       .from("Gastos")
       .select("*")
       .order("fecha_creacion", { ascending: false });
 
+    // 2. Condición clave: Aplicar filtro de fechas si ambos parámetros están presentes
+    if (fechaInicio && fechaFin) {
+      // Usamos .gte() (mayor o igual) y .lte() (menor o igual) para el rango
+      // Se asume que 'fecha_creacion' es el nombre de la columna en tu tabla de Gastos
+      query = query
+        .gte("fecha_creacion", fechaInicio) // Filtra registros cuya fecha_creacion es >= fechaInicio
+        .lte("fecha_creacion", fechaFin);   // Filtra registros cuya fecha_creacion es <= fechaFin
+    }
+
+    const { data, error } = await query;
+
     if (error) {
+      // 3. Manejo de errores
       return res.status(500).json({ error: error.message });
     }
 
+    // 4. Retorna la respuesta
     return res.status(200).json({ message: "Lista de requerimientos", data });
   } catch (error) {
     return res.status(500).json({ error: "Hubo un problema al obtener los requerimientos." });
