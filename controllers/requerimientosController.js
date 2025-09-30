@@ -242,12 +242,12 @@ export const crearRequerimiento = async (req, res) => {
       });
     }
 
-    await sendEmail(
-      destinatarioEncargado,
-      "Nuevo Requerimiento de Gasto",
-      mensajeEncargado,
-      archivoAdjunto
-    );
+    await sendEmail({
+      to: destinatarioEncargado,
+      subject: "Nuevo Requerimiento de Gasto",
+      htmlContent: mensajeEncargado,
+      attachments: archivoAdjunto,
+    });
 
     return res.status(201).json({
       message:
@@ -427,11 +427,11 @@ export const decidirRequerimiento = async (req, res) => {
 
     const correoSolicitante = data.correo_empleado;
 
-    await sendEmail(
-      correoSolicitante,
-      "Decisión sobre tu requerimiento de gasto",
-      mensajeSolicitante
-    );
+    await sendEmail({
+      to: correoSolicitante,
+      subject: "Decisión sobre tu requerimiento de gasto",
+      htmlContent: mensajeSolicitante,
+    });
 
     return res.status(200).json({
       message: `Requerimiento ${decision} y observación guardados correctamente.`,
@@ -586,11 +586,11 @@ export const enviarVouchers = async (req, res) => {
       </html>
     `;
 
-    await sendEmail(
-      correo_empleado,
-      "Vouchers adjuntos - Merkahorro",
-      mensajeHTML
-    );
+    await sendEmail({
+      to: correo_empleado,
+      subject: "Vouchers adjuntos - Merkahorro",
+      htmlContent: mensajeHTML,
+    });
 
     return res
       .status(200)
@@ -821,11 +821,11 @@ export const editarCotizacion = async (req, res) => {
       </html>
     `;
 
-    await sendEmail(
-      destinatarioEncargado,
-      "Actualización de Requerimiento de Gasto",
-      mensajeEncargado,
-      archivoCotizacion
+    await sendEmail({
+      to: destinatarioEncargado,
+      subject: "Actualización de Requerimiento de Gasto",
+      htmlContent: mensajeEncargado,
+      attachments: archivoCotizacion
         ? [
             {
               filename: archivoCotizacion.originalname,
@@ -833,8 +833,8 @@ export const editarCotizacion = async (req, res) => {
               encoding: "base64",
             },
           ]
-        : []
-    );
+        : [],
+    });
 
     return res.status(200).json({
       message: "Requerimiento actualizado correctamente.",
