@@ -433,18 +433,14 @@ export const decidirRequerimiento = async (req, res) => {
       mensajeSolicitante
     );
 
-    return res
-      .status(200)
-      .json({
-        message: `Requerimiento ${decision} y observación guardados correctamente.`,
-      });
+    return res.status(200).json({
+      message: `Requerimiento ${decision} y observación guardados correctamente.`,
+    });
   } catch (error) {
     console.error("❌ Error en la actualización del estado:", error);
-    return res
-      .status(500)
-      .json({
-        error: "Hubo un problema al procesar la actualización del estado.",
-      });
+    return res.status(500).json({
+      error: "Hubo un problema al procesar la actualización del estado.",
+    });
   }
 };
 
@@ -455,11 +451,9 @@ export const adjuntarVouchers = async (req, res) => {
     const voucherFiles = req.files["vouchers"];
 
     if (!id || !correo_empleado || !voucherFiles || voucherFiles.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: "Se requieren el id, correo_empleado y al menos un voucher.",
-        });
+      return res.status(400).json({
+        error: "Se requieren el id, correo_empleado y al menos un voucher.",
+      });
     }
 
     // 🟡 Obtener los vouchers actuales
@@ -511,12 +505,10 @@ export const adjuntarVouchers = async (req, res) => {
       return res.status(500).json({ error: updateError.message });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Vouchers adjuntados correctamente",
-        archivos_comprobantes: nuevosVouchers,
-      });
+    return res.status(200).json({
+      message: "Vouchers adjuntados correctamente",
+      archivos_comprobantes: nuevosVouchers,
+    });
   } catch (error) {
     console.error("❌ Error general en adjuntarVouchers:", error);
     return res.status(500).json({ error: error.message });
@@ -725,5 +717,164 @@ export const actualizarEstadoCartera = async (req, res) => {
   } catch (error) {
     console.error("❌ Error en actualizarEstadoCartera:", error);
     return res.status(500).json({ error: error.message });
+  }
+};
+
+export const editarCotizacion = async (req, res) => {
+  const { id } = req.params;
+  const archivoCotizacion = req.file;
+  const { observacion } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
+
+  if (!archivoCotizacion && !observacion) {
+    return res
+      .status(400)
+      .json({ error: "Debes proporcionar una cotización o una observación." });
+  }
+
+  try {
+    const { data: requerimiento, error: fetchError } = await supabase
+      .from("Gastos")
+      .select(
+        "archivo_cotizacion, nombre_completo, descripcion, correo_empleado, token, observacion_responsable"
+      )
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !requerimiento) {
+      return res.status(404).json({ error: "Requerimiento no encontrado." });
+    }
+
+    let archivoCotizacionUrl = requerimiento.archivo_cotizacion;
+
+    if (archivoCotizacion) {
+      const uniqueFileName = `${Date.now()}_${sanitizeFileName(
+        archivoCotizacion.originalname
+      )}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("cotizaciones")
+        .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
+          contentType: archivoCotizacion.mimetype,
+        });
+
+      if (uploadError) {
+        return res.status(500).json({ error: uploadError.message });
+      }
+
+      archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
+
+      if (requerimiento.archivo_cotizacion) {
+        const oldFilePath =
+          requerimiento.archivo_cotizacion.split("/cotizaciones/")[1];
+        if (oldFilePath) {
+          const { error: deleteError } = await supabase.storage
+            .from("cotizaciones")
+            .remove([`cotizaciones/${oldFilePath}`]);
+
+          if (deleteError) {
+            console.warn(
+              "⚠️ Error al eliminar el archivo anterior:",
+              deleteError
+            );
+          }
+        }
+      }
+    }
+
+    const updateData = {
+      archivo_cotizacion: archivoCotizacionUrl,
+      observacion_responsable:
+        observacion || requerimiento.observacion_responsable,
+    };
+
+    const { error: updateError } = await supabase
+      .from("Gastos")
+      .update(updateData)
+      .eq("id", id);
+
+    if (updateError) {
+      return res.status(500).json({ error: updateError.message });
+    }
+
+    const destinatarioEncargado = obtenerJefePorEmpleado(
+      requerimiento.correo_empleado
+    );
+    const mensajeEncargado = `
+      <!DOCTYPE html>
+      <html>
+      <body>
+        <h2>Actualización de Requerimiento</h2>
+        <p>Estimado encargado,</p>
+        <p>Se ha actualizado el requerimiento de ${
+          requerimiento.nombre_completo
+        } (${requerimiento.descripcion}).</p>
+        ${
+          archivoCotizacion
+            ? `<p>Nueva Cotización: <a href="${archivoCotizacionUrl}">Ver Cotización</a></p>`
+            : ""
+        }
+        ${observacion ? `<p>Nueva Observación: ${observacion}</p>` : ""}
+      </body>
+      </html>
+    `;
+
+    await sendEmail(
+      destinatarioEncargado,
+      "Actualización de Requerimiento de Gasto",
+      mensajeEncargado,
+      archivoCotizacion
+        ? [
+            {
+              filename: archivoCotizacion.originalname,
+              content: archivoCotizacion.buffer,
+              encoding: "base64",
+            },
+          ]
+        : []
+    );
+
+    return res.status(200).json({
+      message: "Requerimiento actualizado correctamente.",
+      archivo_cotizacion: archivoCotizacionUrl,
+    });
+  } catch (err) {
+    console.error("❌ Error en editarCotizacion:", err);
+    return res
+      .status(500)
+      .json({ error: "Hubo un problema al actualizar el requerimiento." });
+  }
+};
+
+export const editarTiempoFechaPago = async (req, res) => {
+  const { id } = req.params;
+  const { tiempo_fecha_pago } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
+
+  if (!tiempo_fecha_pago) {
+    return res.status(400).json({ error: "Se requiere tiempo_fecha_pago." });
+  }
+
+  try {
+    const { error } = await supabase
+      .from("Gastos")
+      .update({ tiempo_fecha_pago })
+      .eq("id", id);
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Tiempo/Fecha de Pago actualizado correctamente." });
+  } catch (err) {
+    console.error("❌ Error en editarTiempoFechaPago:", err);
+    return res.status(500).json({ error: "Hubo un problema al actualizar." });
   }
 };
