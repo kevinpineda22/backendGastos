@@ -262,13 +262,19 @@ export const crearRequerimiento = async (req, res) => {
   }
 };
 
-// ✅ Consultar historial de gastos por empleado con filtro de fechas
+// ✅ Consultar historial de gastos por empleado CON FILTRO DE FECHAS
 export const obtenerHistorialGastos = async (req, res) => {
   const { correo_empleado, fechaInicio, fechaFin } = req.query;
 
-  console.log("📅 Parámetros recibidos:", { correo_empleado, fechaInicio, fechaFin });
+  // 🐛 DEBUG: Ver qué parámetros llegan
+  console.log("🔍 Parámetros recibidos en backend:", { 
+    correo_empleado, 
+    fechaInicio, 
+    fechaFin 
+  });
 
   try {
+    // Construir la consulta base
     let query = supabase
       .from("Gastos")
       .select("*")
@@ -279,19 +285,24 @@ export const obtenerHistorialGastos = async (req, res) => {
       query = query.eq("correo_empleado", correo_empleado);
     }
 
-    // Aplicar filtro de fechas si se proporcionan
+    // 🎯 AQUÍ ESTÁ LA CLAVE: Aplicar filtro de fechas
     if (fechaInicio && fechaFin) {
-      // Convertir fechas al formato correcto para Supabase
-      const fechaInicioISO = `${fechaInicio}T00:00:00.000Z`;
-      const fechaFinISO = `${fechaFin}T23:59:59.999Z`;
+      // Convertir las fechas a formato ISO con horas
+      const fechaInicioCompleta = `${fechaInicio}T00:00:00.000Z`;
+      const fechaFinCompleta = `${fechaFin}T23:59:59.999Z`;
       
-      console.log("🔍 Filtrando entre:", fechaInicioISO, "y", fechaFinISO);
-      
+      console.log("📅 Aplicando filtro de fechas:", {
+        desde: fechaInicioCompleta,
+        hasta: fechaFinCompleta
+      });
+
+      // Aplicar el filtro a la consulta
       query = query
-        .gte("fecha_creacion", fechaInicioISO)
-        .lte("fecha_creacion", fechaFinISO);
+        .gte("fecha_creacion", fechaInicioCompleta)
+        .lte("fecha_creacion", fechaFinCompleta);
     }
 
+    // Ejecutar la consulta
     const { data, error } = await query;
 
     if (error) {
@@ -299,10 +310,11 @@ export const obtenerHistorialGastos = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("✅ Historial de gastos obtenido:", data?.length || 0, "registros");
+    console.log("✅ Registros encontrados después del filtro:", data?.length || 0);
     
-    // Asegúrate de devolver la estructura que espera el frontend
+    // 🎯 IMPORTANTE: Devolver en el formato que espera tu frontend
     return res.status(200).json({ data });
+    
   } catch (error) {
     console.error("❌ Error al obtener el historial de gastos:", error);
     return res
