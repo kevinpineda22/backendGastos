@@ -262,18 +262,25 @@ export const crearRequerimiento = async (req, res) => {
   }
 };
 
-// ✅ Consultar historial de gastos por empleado
+// ✅ Consultar historial de gastos por empleado con filtro de fechas
 export const obtenerHistorialGastos = async (req, res) => {
-  const { correo_empleado } = req.query;
+  const { correo_empleado, fechaInicio, fechaFin } = req.query;
 
   try {
-    const query = supabase
+    let query = supabase
       .from("Gastos")
       .select("*")
       .order("fecha_creacion", { ascending: false });
 
     if (correo_empleado) {
-      query.eq("correo_empleado", correo_empleado);
+      query = query.eq("correo_empleado", correo_empleado);
+    }
+
+    // Aplicar filtro de fechas si se proporcionan
+    if (fechaInicio && fechaFin) {
+      query = query
+        .gte("fecha_creacion", fechaInicio)
+        .lte("fecha_creacion", fechaFin + "T23:59:59.999Z"); // Incluir todo el día final
     }
 
     const { data, error } = await query;
@@ -283,8 +290,8 @@ export const obtenerHistorialGastos = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("✅ Historial de gastos obtenido:", data);
-    return res.status(200).json(data);
+    console.log("✅ Historial de gastos obtenido:", data?.length || 0, "registros");
+    return res.status(200).json({ data });
   } catch (error) {
     console.error("❌ Error al obtener el historial de gastos:", error);
     return res
