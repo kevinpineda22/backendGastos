@@ -15,8 +15,36 @@ const sanitizeFileName = (fileName) => {
 // Estructura de grupos de líderes con sus empleados
 const gruposLideres = {
   "kp0827074@gmail.com": ["desarrollo@merkahorrosas.com"],
-  "isazamanuel04@gmail.com": ["juanmerkahorro@gmail.com"],
+  "isazamanuel04@gmail.com": [
+    "juanmerkahorro@gmail.com",
+    "developersmk@merkahorrosas.com",
+  ],
   "johansanchezvalencia@gmail.com": ["johanmerkahorro777@gmail.com"],
+  "contabilidad1@merkahorrosas.com": ["analistacontable@merkahorrosas.com"],
+  "gerencia1@merkahorrosas.com": [
+    "comercial@merkahorrosas.com",
+    "paginaweb@merkahorrosas.com",
+  ],
+  "gestionhumana@merkahorrosas.com": [
+    "asistentegh@merkahorrosas.com",
+    "sistemageneralsst@merkahorrosas.com",
+    "analistadebienestar@merkahorrosas.com",
+  ],
+  "carteraytesoreria@merkahorrosas.com": [
+    "cartera@merkahorrosas.com",
+    "analistatesoreria@merkahorrosas.com",
+  ],
+};
+
+// Definir roles de usuarios para permisos
+const userPermissions = {
+  "carteraytesoreria@merkahorrosas.com": { role: "director" },
+  "gestionhumana@merkahorrosas.com": { role: "director" },
+  "operaciones@merkahorrosas.com": { role: "director" },
+  "contabilidad1@merkahorrosas.com": { role: "director" },
+  "juanmerkahorro@gmail.com": { role: "director" },
+  "johanmerkahorro777@gmail.com": { role: "contabilidad" },
+  "contabilidad@merkahorrosas.com": { role: "contabilidad" },
 };
 
 const obtenerJefePorEmpleado = (correo_empleado) => {
@@ -26,6 +54,29 @@ const obtenerJefePorEmpleado = (correo_empleado) => {
     }
   }
   return "operaciones@merkahorrosas.com";
+};
+
+// Función para obtener el rol de un usuario
+const obtenerRolUsuario = (correo_usuario) => {
+  return userPermissions[correo_usuario]?.role || "empleado";
+};
+
+// Función para verificar si un usuario tiene permisos específicos
+const verificarPermisos = (correo_usuario, accion) => {
+  const rol = obtenerRolUsuario(correo_usuario);
+
+  switch (accion) {
+    case "aprobar_requerimiento":
+      return ["director"].includes(rol);
+    case "actualizar_contabilidad":
+      return ["director", "contabilidad"].includes(rol);
+    case "ver_todos_requerimientos":
+      return ["director", "contabilidad"].includes(rol);
+    case "eliminar_requerimiento":
+      return ["director"].includes(rol);
+    default:
+      return false;
+  }
 };
 
 // ✅ Crear requerimiento
@@ -267,10 +318,10 @@ export const obtenerHistorialGastos = async (req, res) => {
   const { correo_empleado, fechaInicio, fechaFin } = req.query;
 
   // 🐛 DEBUG: Ver qué parámetros llegan
-  console.log("🔍 Parámetros recibidos en backend:", { 
-    correo_empleado, 
-    fechaInicio, 
-    fechaFin 
+  console.log("🔍 Parámetros recibidos en backend:", {
+    correo_empleado,
+    fechaInicio,
+    fechaFin,
   });
 
   try {
@@ -290,10 +341,10 @@ export const obtenerHistorialGastos = async (req, res) => {
       // Convertir las fechas a formato ISO con horas
       const fechaInicioCompleta = `${fechaInicio}T00:00:00.000Z`;
       const fechaFinCompleta = `${fechaFin}T23:59:59.999Z`;
-      
+
       console.log("📅 Aplicando filtro de fechas:", {
         desde: fechaInicioCompleta,
-        hasta: fechaFinCompleta
+        hasta: fechaFinCompleta,
       });
 
       // Aplicar el filtro a la consulta
@@ -310,11 +361,13 @@ export const obtenerHistorialGastos = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("✅ Registros encontrados después del filtro:", data?.length || 0);
-    
+    console.log(
+      "✅ Registros encontrados después del filtro:",
+      data?.length || 0
+    );
+
     // 🎯 IMPORTANTE: Devolver en el formato que espera tu frontend
     return res.status(200).json({ data });
-    
   } catch (error) {
     console.error("❌ Error al obtener el historial de gastos:", error);
     return res
