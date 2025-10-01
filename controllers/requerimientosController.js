@@ -315,10 +315,19 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
-// ✅ Actualizar requerimiento (corregido para manejar voucher)
+// ✅ Actualizar requerimiento (corregido para manejar nuevos campos)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
-  const { estado, observacion, verificado, observacionC, voucher } = req.body;
+  const {
+    estado,
+    observacion,
+    verificado,
+    observacionC,
+    voucher,
+    numero_causacion,
+    factura,
+    categoria_gasto,
+  } = req.body;
 
   console.log("=== INICIANDO ACTUALIZACIÓN ===");
   console.log("ID recibido:", id);
@@ -330,6 +339,9 @@ export const actualizarRequerimiento = async (req, res) => {
     observacionC,
     verificado,
     voucher,
+    numero_causacion,
+    factura,
+    categoria_gasto,
   });
 
   // Validar formato UUID básico
@@ -386,6 +398,11 @@ export const actualizarRequerimiento = async (req, res) => {
     if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
     if (voucher !== undefined) updateData.voucher = voucher;
+    if (numero_causacion !== undefined)
+      updateData.numero_causacion = numero_causacion;
+    if (factura !== undefined) updateData.factura = factura;
+    if (categoria_gasto !== undefined)
+      updateData.categoria_gasto = categoria_gasto;
 
     // Agregar timestamp de última modificación
     updateData.hora_ultima_modificacion_contabilidad = new Date().toISOString();

@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -8,15 +8,19 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_SECURE === 'true', // secure:false para STARTTLS en el puerto 587
+  secure: process.env.SMTP_SECURE === "true", // secure:false para STARTTLS en el puerto 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-
-export const sendEmail = async ({ to, subject, htmlContent, attachments = [] }) => {
+export const sendEmail = async ({
+  to,
+  subject,
+  htmlContent,
+  attachments = [],
+}) => {
   try {
     const info = await transporter.sendMail({
       from: `"Merkahorro" <${process.env.EMAIL_USER}>`,
@@ -29,7 +33,7 @@ export const sendEmail = async ({ to, subject, htmlContent, attachments = [] }) 
     console.log(`📨 Correo enviado a ${to}:`, info.messageId);
     return info; // Devolvemos la información del envío exitoso.
   } catch (error) {
-    console.error('❌ Error al enviar el correo:', error);
+    console.error("❌ Error al enviar el correo:", error);
     // Es una buena práctica relanzar el error para que la función que llama a sendEmail
     // sepa que algo salió mal y pueda manejarlo adecuadamente.
     throw error;
