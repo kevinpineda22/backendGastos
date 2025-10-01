@@ -405,8 +405,10 @@ export const actualizarRequerimiento = async (req, res) => {
     if (categoria_gasto !== undefined)
       updateData.categoria_gasto = categoria_gasto;
 
-    // Agregar timestamp de última modificación (se recomienda dejarlo en UTC y manejar la TZ en el frontend)
-    updateData.hora_ultima_modificacion_contabilidad = new Date().toISOString();
+    // Agregar timestamp de última modificación restando 5 horas para ajustar a la zona horaria local
+    const now = new Date();
+    const localTime = new Date(now.getTime() - 5 * 60 * 60 * 1000); // Restar 5 horas
+    updateData.hora_ultima_modificacion_contabilidad = localTime.toISOString();
 
     console.log("📝 PASO 2: Datos finales para actualizar:", updateData);
 
