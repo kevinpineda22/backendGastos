@@ -266,21 +266,30 @@ export const crearRequerimiento = async (req, res) => {
 export const obtenerHistorialGastos = async (req, res) => {
   const { correo_empleado, fechaInicio, fechaFin } = req.query;
 
+  console.log("📅 Parámetros recibidos:", { correo_empleado, fechaInicio, fechaFin });
+
   try {
     let query = supabase
       .from("Gastos")
       .select("*")
       .order("fecha_creacion", { ascending: false });
 
+    // Filtrar por correo si se proporciona
     if (correo_empleado) {
       query = query.eq("correo_empleado", correo_empleado);
     }
 
     // Aplicar filtro de fechas si se proporcionan
     if (fechaInicio && fechaFin) {
+      // Convertir fechas al formato correcto para Supabase
+      const fechaInicioISO = `${fechaInicio}T00:00:00.000Z`;
+      const fechaFinISO = `${fechaFin}T23:59:59.999Z`;
+      
+      console.log("🔍 Filtrando entre:", fechaInicioISO, "y", fechaFinISO);
+      
       query = query
-        .gte("fecha_creacion", fechaInicio)
-        .lte("fecha_creacion", fechaFin + "T23:59:59.999Z"); // Incluir todo el día final
+        .gte("fecha_creacion", fechaInicioISO)
+        .lte("fecha_creacion", fechaFinISO);
     }
 
     const { data, error } = await query;
@@ -291,6 +300,8 @@ export const obtenerHistorialGastos = async (req, res) => {
     }
 
     console.log("✅ Historial de gastos obtenido:", data?.length || 0, "registros");
+    
+    // Asegúrate de devolver la estructura que espera el frontend
     return res.status(200).json({ data });
   } catch (error) {
     console.error("❌ Error al obtener el historial de gastos:", error);
