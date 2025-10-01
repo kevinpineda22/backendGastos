@@ -320,8 +320,11 @@ export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
   const { estado, observacion, verificado, observacionC, voucher } = req.body;
 
-  console.log("Actualizando registro con ID:", id);
-  console.log("Datos recibidos:", {
+  console.log("=== INICIANDO ACTUALIZACIÓN ===");
+  console.log("ID recibido:", id);
+  console.log("Tipo de ID:", typeof id);
+  console.log("Longitud del ID:", id ? id.length : "null");
+  console.log("Datos a actualizar:", {
     estado,
     observacion,
     observacionC,
@@ -329,40 +332,110 @@ export const actualizarRequerimiento = async (req, res) => {
     voucher,
   });
 
+  // Validar formato UUID básico
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!id || !uuidRegex.test(id)) {
+    console.error("❌ ID no es un UUID válido:", id);
+    return res.status(400).json({
+      error: "ID inválido. Debe ser un UUID válido.",
+      id_recibido: id,
+    });
+  }
+
   try {
+    // 🔍 PASO 1: Verificar si el registro existe
+    console.log("🔍 PASO 1: Verificando existencia del registro...");
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from("Gastos")
+      .select("id, estado, nombre_completo, descripcion")
+      .eq("id", id)
+      .single();
+
+    console.log("Resultado búsqueda:", {
+      data: existingRecord,
+      error: fetchError,
+    });
+
+    if (fetchError) {
+      console.error("❌ Error en la búsqueda:", fetchError);
+      if (fetchError.code === "PGRST116") {
+        return res.status(404).json({
+          error: "Requerimiento no encontrado",
+          id_buscado: id,
+          codigo_error: fetchError.code,
+        });
+      }
+      return res.status(500).json({ error: fetchError.message });
+    }
+
+    if (!existingRecord) {
+      console.warn("⚠️ Registro no encontrado con ID:", id);
+      return res.status(404).json({
+        error: "Requerimiento no encontrado",
+        id_buscado: id,
+      });
+    }
+
+    console.log("✅ Registro encontrado:", existingRecord);
+
+    // 🔄 PASO 2: Preparar datos para actualización
     const updateData = {};
     if (estado !== undefined) updateData.estado = estado;
     if (observacion !== undefined) updateData.observacion = observacion;
     if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
-    if (voucher !== undefined) updateData.voucher = voucher; // Permitimos null o un valor
+    if (voucher !== undefined) updateData.voucher = voucher;
 
-    const { data, error } = await supabase
+    // Agregar timestamp de última modificación
+    updateData.hora_ultima_modificacion_contabilidad = new Date().toISOString();
+
+    console.log("📝 PASO 2: Datos finales para actualizar:", updateData);
+
+    // 🚀 PASO 3: Ejecutar actualización
+    console.log("🚀 PASO 3: Ejecutando actualización...");
+    const { data: updatedData, error: updateError } = await supabase
       .from("Gastos")
       .update(updateData)
       .eq("id", id)
       .select();
 
-    console.log("Resultado del update:", { data, error });
+    console.log("Resultado actualización:", {
+      data: updatedData,
+      error: updateError,
+      rowsAffected: updatedData ? updatedData.length : 0,
+    });
 
-    if (error) {
-      console.error("Error al actualizar requerimiento:", error);
-      return res
-        .status(500)
-        .json({ error: error.message || "Error desconocido" });
+    if (updateError) {
+      console.error("❌ Error al actualizar:", updateError);
+      return res.status(500).json({
+        error: updateError.message || "Error desconocido",
+        codigo_error: updateError.code,
+      });
     }
 
-    if (!data || data.length === 0) {
-      console.warn("No se retornaron filas actualizadas; posible ID inválido.");
-      return res.status(404).json({ error: "Requerimiento no encontrado" });
+    if (!updatedData || updatedData.length === 0) {
+      console.warn(
+        "⚠️ No se actualizaron filas. Posible problema de permisos RLS."
+      );
+      return res.status(404).json({
+        error: "No se pudo actualizar el requerimiento. Verifique permisos.",
+        id_buscado: id,
+      });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Registro actualizado correctamente", data });
+    console.log("✅ Actualización exitosa");
+    return res.status(200).json({
+      message: "Registro actualizado correctamente",
+      data: updatedData[0],
+      timestamp: new Date().toISOString(),
+    });
   } catch (err) {
-    console.error("Error en actualizarRequerimiento:", err);
-    return res.status(500).json({ error: err.message });
+    console.error("💥 Error general en actualizarRequerimiento:", err);
+    return res.status(500).json({
+      error: err.message,
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    });
   }
 };
 
