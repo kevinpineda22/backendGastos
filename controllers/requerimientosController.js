@@ -398,13 +398,14 @@ export const actualizarRequerimiento = async (req, res) => {
     if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
     if (voucher !== undefined) updateData.voucher = voucher;
+
     if (numero_causacion !== undefined)
       updateData.numero_causacion = numero_causacion;
     if (factura !== undefined) updateData.factura = factura;
     if (categoria_gasto !== undefined)
       updateData.categoria_gasto = categoria_gasto;
 
-    // Agregar timestamp de última modificación
+    // Agregar timestamp de última modificación (se recomienda dejarlo en UTC y manejar la TZ en el frontend)
     updateData.hora_ultima_modificacion_contabilidad = new Date().toISOString();
 
     console.log("📝 PASO 2: Datos finales para actualizar:", updateData);
@@ -627,12 +628,12 @@ export const enviarVouchers = async (req, res) => {
     const linksHTML = data.vouchers
       .map(
         (url, idx) => `
-      <p style="text-align: center; margin: 12px 0;">
-        <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
-          Ver Voucher ${idx + 1}
-        </a>
-      </p>
-    `
+        <p style="text-align: center; margin: 12px 0;">
+          <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #210d65; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px;">
+            Ver Voucher ${idx + 1}
+          </a>
+        </p>
+      `
       )
       .join("");
 
