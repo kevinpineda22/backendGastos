@@ -1067,3 +1067,4 @@ export const editarTiempoFechaPago = async (req, res) => {
     return res.status(500).json({ error: "Hubo un problema al actualizar." });
   }
 };
+
