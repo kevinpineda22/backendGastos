@@ -899,13 +899,19 @@ export const actualizarEstadoCartera = async (req, res) => {
 export const editarCotizacion = async (req, res) => {
   const { id } = req.params;
   const archivoCotizacion = req.file;
-  const { observacion } = req.body;
+  const { observacion_responsable } = req.body; // ✅ CAMBIO: Usar observacion_responsable
+
+  console.log("📝 Datos recibidos en editarCotizacion:", { 
+    id, 
+    observacion_responsable, 
+    tieneArchivo: !!archivoCotizacion 
+  });
 
   if (!id) {
     return res.status(400).json({ error: "ID inválido." });
   }
 
-  if (!archivoCotizacion && !observacion) {
+  if (!archivoCotizacion && !observacion_responsable) {
     return res
       .status(400)
       .json({ error: "Debes proporcionar una cotización o una observación." });
@@ -962,9 +968,15 @@ export const editarCotizacion = async (req, res) => {
 
     const updateData = {
       archivo_cotizacion: archivoCotizacionUrl,
-      observacion_responsable:
-        observacion || requerimiento.observacion_responsable,
     };
+
+    // ✅ CAMBIO: Solo agregar observacion_responsable si se proporciona
+    if (observacion_responsable !== undefined && observacion_responsable !== null) {
+      updateData.observacion_responsable = observacion_responsable;
+      console.log("📝 Actualizando observacion_responsable a:", observacion_responsable);
+    }
+
+    console.log("📝 Datos finales para actualizar:", updateData);
 
     const { error: updateError } = await supabase
       .from("Gastos")
@@ -972,6 +984,7 @@ export const editarCotizacion = async (req, res) => {
       .eq("id", id);
 
     if (updateError) {
+      console.error("❌ Error al actualizar:", updateError);
       return res.status(500).json({ error: updateError.message });
     }
 
@@ -992,7 +1005,7 @@ export const editarCotizacion = async (req, res) => {
             ? `<p>Nueva Cotización: <a href="${archivoCotizacionUrl}">Ver Cotización</a></p>`
             : ""
         }
-        ${observacion ? `<p>Nueva Observación: ${observacion}</p>` : ""}
+        ${observacion_responsable ? `<p>Nueva Observación: ${observacion_responsable}</p>` : ""}
       </body>
       </html>
     `;
