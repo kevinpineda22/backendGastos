@@ -1070,15 +1070,18 @@ export const editarTiempoFechaPago = async (req, res) => {
   }
 
   try {
-    // ✅ CAMBIO: Manejar la fecha como DATE en lugar de TIMESTAMP
-    // Si el frontend envía "2025-10-24", lo guardamos exactamente así
-    const fechaParaGuardar = tiempo_fecha_pago; // No hacer conversiones adicionales
+    // ✅ CAMBIO CRÍTICO: Validar que sea formato YYYY-MM-DD y enviarlo así
+    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!fechaRegex.test(tiempo_fecha_pago)) {
+      return res.status(400).json({ error: "Formato de fecha inválido. Use YYYY-MM-DD." });
+    }
 
-    console.log("📅 Fecha que se guardará:", fechaParaGuardar);
+    console.log("📅 Fecha que se guardará (sin conversiones):", tiempo_fecha_pago);
 
+    // ✅ CRÍTICO: Guardar exactamente como viene, sin conversiones
     const { error } = await supabase
       .from("Gastos")
-      .update({ tiempo_fecha_pago: fechaParaGuardar })
+      .update({ tiempo_fecha_pago: tiempo_fecha_pago }) // Guardar como string DATE
       .eq("id", id);
 
     if (error) {
@@ -1086,7 +1089,7 @@ export const editarTiempoFechaPago = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("✅ Fecha actualizada correctamente");
+    console.log("✅ Fecha actualizada correctamente como:", tiempo_fecha_pago);
 
     return res
       .status(200)
