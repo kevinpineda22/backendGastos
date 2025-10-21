@@ -1055,10 +1055,11 @@ export const editarTiempoFechaPago = async (req, res) => {
   const { id } = req.params;
   const { tiempo_fecha_pago } = req.body;
 
-  console.log("📝 Datos recibidos en editarTiempoFechaPago:", { 
+  console.log("📝 [BACKEND] Datos recibidos en editarTiempoFechaPago:", { 
     id, 
     tiempo_fecha_pago,
-    tipoFecha: typeof tiempo_fecha_pago
+    tipoFecha: typeof tiempo_fecha_pago,
+    longitudFecha: tiempo_fecha_pago?.length
   });
 
   if (!id) {
@@ -1070,32 +1071,49 @@ export const editarTiempoFechaPago = async (req, res) => {
   }
 
   try {
-    // ✅ CAMBIO CRÍTICO: Validar formato y guardar como DATE limpio
+    // ✅ VALIDACIÓN ESTRICTA: Solo aceptar formato YYYY-MM-DD
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!fechaRegex.test(tiempo_fecha_pago)) {
-      return res.status(400).json({ error: "Formato de fecha inválido. Use YYYY-MM-DD." });
+      console.error("❌ [BACKEND] Formato de fecha inválido:", tiempo_fecha_pago);
+      return res.status(400).json({ 
+        error: "Formato de fecha inválido. Debe ser exactamente YYYY-MM-DD.",
+        recibido: tiempo_fecha_pago,
+        formatoEsperado: "YYYY-MM-DD"
+      });
     }
 
-    console.log("📅 Fecha que se guardará (formato DATE):", tiempo_fecha_pago);
+    console.log("📅 [BACKEND] Fecha validada, guardando directamente:", tiempo_fecha_pago);
 
-    // ✅ CRÍTICO: Guardar EXACTAMENTE como viene, sin modificaciones
-    const { error } = await supabase
+    // ✅ GUARDAR DIRECTAMENTE: Sin ninguna conversión o manipulación
+    const { data, error } = await supabase
       .from("Gastos")
-      .update({ tiempo_fecha_pago: tiempo_fecha_pago }) // Supabase maneja automáticamente DATE
-      .eq("id", id);
+      .update({ tiempo_fecha_pago: tiempo_fecha_pago })
+      .eq("id", id)
+      .select(); // Agregar select para ver qué se guardó
 
     if (error) {
-      console.error("❌ Error al actualizar fecha:", error);
+      console.error("❌ [BACKEND] Error de Supabase al actualizar:", error);
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("✅ Fecha actualizada correctamente como:", tiempo_fecha_pago);
+    if (!data || data.length === 0) {
+      console.error("❌ [BACKEND] No se encontró registro para actualizar:", id);
+      return res.status(404).json({ error: "Registro no encontrado" });
+    }
 
-    return res
-      .status(200)
-      .json({ message: "Tiempo/Fecha de Pago actualizado correctamente." });
+    console.log("✅ [BACKEND] Fecha guardada correctamente:", {
+      fechaEnviada: tiempo_fecha_pago,
+      fechaGuardada: data[0].tiempo_fecha_pago,
+      sonIguales: tiempo_fecha_pago === data[0].tiempo_fecha_pago
+    });
+
+    return res.status(200).json({ 
+      message: "Tiempo/Fecha de Pago actualizado correctamente.",
+      fechaGuardada: data[0].tiempo_fecha_pago
+    });
+
   } catch (err) {
-    console.error("❌ Error en editarTiempoFechaPago:", err);
+    console.error("❌ [BACKEND] Error general en editarTiempoFechaPago:", err);
     return res.status(500).json({ error: "Hubo un problema al actualizar." });
   }
 };
