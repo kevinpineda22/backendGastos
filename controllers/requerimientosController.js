@@ -1055,6 +1055,12 @@ export const editarTiempoFechaPago = async (req, res) => {
   const { id } = req.params;
   const { tiempo_fecha_pago } = req.body;
 
+  console.log("📝 Datos recibidos en editarTiempoFechaPago:", { 
+    id, 
+    tiempo_fecha_pago,
+    tipoFecha: typeof tiempo_fecha_pago
+  });
+
   if (!id) {
     return res.status(400).json({ error: "ID inválido." });
   }
@@ -1064,14 +1070,23 @@ export const editarTiempoFechaPago = async (req, res) => {
   }
 
   try {
+    // ✅ CAMBIO: Manejar la fecha como DATE en lugar de TIMESTAMP
+    // Si el frontend envía "2025-10-24", lo guardamos exactamente así
+    const fechaParaGuardar = tiempo_fecha_pago; // No hacer conversiones adicionales
+
+    console.log("📅 Fecha que se guardará:", fechaParaGuardar);
+
     const { error } = await supabase
       .from("Gastos")
-      .update({ tiempo_fecha_pago })
+      .update({ tiempo_fecha_pago: fechaParaGuardar })
       .eq("id", id);
 
     if (error) {
+      console.error("❌ Error al actualizar fecha:", error);
       return res.status(500).json({ error: error.message });
     }
+
+    console.log("✅ Fecha actualizada correctamente");
 
     return res
       .status(200)
