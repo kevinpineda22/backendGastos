@@ -407,7 +407,7 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
-// ✅ Actualizar requerimiento (corregido para manejar nuevos campos)
+// ✅ Actualizar requerimiento (corregido para manejar campos de tiempo correctamente)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
   const {
@@ -419,12 +419,12 @@ export const actualizarRequerimiento = async (req, res) => {
     numero_causacion,
     factura,
     categoria_gasto,
+    hora_cambio_estado, // ✅ NUEVO: Recibir desde frontend
+    hora_ultima_modificacion_contabilidad, // ✅ NUEVO: Recibir desde frontend
   } = req.body;
 
   console.log("=== INICIANDO ACTUALIZACIÓN ===");
   console.log("ID recibido:", id);
-  console.log("Tipo de ID:", typeof id);
-  console.log("Longitud del ID:", id ? id.length : "null");
   console.log("Datos a actualizar:", {
     estado,
     observacion,
@@ -434,6 +434,8 @@ export const actualizarRequerimiento = async (req, res) => {
     numero_causacion,
     factura,
     categoria_gasto,
+    hora_cambio_estado, // ✅ LOG
+    hora_ultima_modificacion_contabilidad, // ✅ LOG
   });
 
   // Validar formato UUID básico
@@ -490,17 +492,20 @@ export const actualizarRequerimiento = async (req, res) => {
     if (observacionC !== undefined) updateData.observacionC = observacionC;
     if (verificado !== undefined) updateData.verificado = verificado;
     if (voucher !== undefined) updateData.voucher = voucher;
-
-    if (numero_causacion !== undefined)
-      updateData.numero_causacion = numero_causacion;
+    if (numero_causacion !== undefined) updateData.numero_causacion = numero_causacion;
     if (factura !== undefined) updateData.factura = factura;
-    if (categoria_gasto !== undefined)
-      updateData.categoria_gasto = categoria_gasto;
+    if (categoria_gasto !== undefined) updateData.categoria_gasto = categoria_gasto;
 
-    // Agregar timestamp de última modificación restando 5 horas para ajustar a la zona horaria local
-    const now = new Date();
-    const localTime = new Date(now.getTime() - 5 * 60 * 60 * 1000); // Restar 5 horas
-    updateData.hora_ultima_modificacion_contabilidad = localTime.toISOString();
+    // ✅ NUEVO: Manejo específico de campos de tiempo
+    if (hora_cambio_estado !== undefined) {
+      updateData.hora_cambio_estado = hora_cambio_estado;
+      console.log("⏰ Actualizando hora_cambio_estado:", hora_cambio_estado);
+    }
+
+    if (hora_ultima_modificacion_contabilidad !== undefined) {
+      updateData.hora_ultima_modificacion_contabilidad = hora_ultima_modificacion_contabilidad;
+      console.log("⏰ Actualizando hora_ultima_modificacion_contabilidad:", hora_ultima_modificacion_contabilidad);
+    }
 
     console.log("📝 PASO 2: Datos finales para actualizar:", updateData);
 
