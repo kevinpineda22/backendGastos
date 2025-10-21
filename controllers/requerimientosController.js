@@ -1070,18 +1070,18 @@ export const editarTiempoFechaPago = async (req, res) => {
   }
 
   try {
-    // ✅ CAMBIO CRÍTICO: Validar que sea formato YYYY-MM-DD y enviarlo así
+    // ✅ CAMBIO CRÍTICO: Validar formato y guardar como DATE limpio
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!fechaRegex.test(tiempo_fecha_pago)) {
       return res.status(400).json({ error: "Formato de fecha inválido. Use YYYY-MM-DD." });
     }
 
-    console.log("📅 Fecha que se guardará (sin conversiones):", tiempo_fecha_pago);
+    console.log("📅 Fecha que se guardará (formato DATE):", tiempo_fecha_pago);
 
-    // ✅ CRÍTICO: Guardar exactamente como viene, sin conversiones
+    // ✅ CRÍTICO: Guardar EXACTAMENTE como viene, sin modificaciones
     const { error } = await supabase
       .from("Gastos")
-      .update({ tiempo_fecha_pago: tiempo_fecha_pago }) // Guardar como string DATE
+      .update({ tiempo_fecha_pago: tiempo_fecha_pago }) // Supabase maneja automáticamente DATE
       .eq("id", id);
 
     if (error) {
