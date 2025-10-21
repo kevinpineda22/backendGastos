@@ -94,7 +94,13 @@ export const crearRequerimiento = async (req, res) => {
     tiempo_fecha_pago,
     correo_empleado,
     monto_sede,
+    observacion_responsable, // ✅ CORREGIDO: Este es para el campo "Observación:" del formulario
   } = req.body;
+
+  // ✅ NUEVO: Log para debug
+  console.log("📝 Campos de observación recibidos:", {
+    observacion_responsable, // Del formulario
+  });
 
   const archivoCotizacion = req.files["archivo_cotizacion"]
     ? req.files["archivo_cotizacion"][0]
@@ -191,11 +197,14 @@ export const crearRequerimiento = async (req, res) => {
           archivo_cotizacion: archivoCotizacionUrl,
           archivos_proveedor: archivosProveedorUrls,
           correo_empleado,
+          observacion: observacion_responsable || "", // ✅ CORREGIDO: Guardar en campo 'observacion' de la tabla
           token,
           estado: "Pendiente",
         },
       ])
       .select();
+
+    console.log("✅ Registro insertado con observacion:", observacion_responsable);
 
     if (error) {
       console.error("❌ Error al insertar en Supabase:", error);
