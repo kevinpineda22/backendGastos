@@ -419,8 +419,7 @@ export const actualizarRequerimiento = async (req, res) => {
     numero_causacion,
     factura,
     categoria_gasto,
-    hora_cambio_estado, // ✅ NUEVO: Recibir desde frontend
-    hora_ultima_modificacion_contabilidad, // ✅ NUEVO: Recibir desde frontend
+    // ❌ REMOVIDO: Ya no recibir hora_cambio_estado ni hora_ultima_modificacion_contabilidad del frontend
   } = req.body;
 
   console.log("=== INICIANDO ACTUALIZACIÓN ===");
@@ -434,8 +433,8 @@ export const actualizarRequerimiento = async (req, res) => {
     numero_causacion,
     factura,
     categoria_gasto,
-    hora_cambio_estado, // ✅ LOG
-    hora_ultima_modificacion_contabilidad, // ✅ LOG
+    // hora_cambio_estado, // ✅ REMOVIDO
+    // hora_ultima_modificacion_contabilidad, // ✅ REMOVIDO
   });
 
   // Validar formato UUID básico
@@ -496,15 +495,26 @@ export const actualizarRequerimiento = async (req, res) => {
     if (factura !== undefined) updateData.factura = factura;
     if (categoria_gasto !== undefined) updateData.categoria_gasto = categoria_gasto;
 
-    // ✅ NUEVO: Manejo específico de campos de tiempo
-    if (hora_cambio_estado !== undefined) {
-      updateData.hora_cambio_estado = hora_cambio_estado;
-      console.log("⏰ Actualizando hora_cambio_estado:", hora_cambio_estado);
+    // ✅ NUEVO: Calcular tiempos en zona horaria de Bogotá (UTC-5) en el servidor
+    const calcularTiempoBogota = () => {
+      const now = new Date();
+      const bogotaOffset = -5 * 60 * 60 * 1000; // UTC-5 en milisegundos
+      const bogotaTime = new Date(now.getTime() + bogotaOffset);
+      return bogotaTime.toISOString();
+    };
+
+    // ✅ Si se cambia el estado, calcular hora_cambio_estado
+    if (estado !== undefined && estado !== existingRecord.estado) {
+      updateData.hora_cambio_estado = calcularTiempoBogota();
+      console.log("⏰ Calculando hora_cambio_estado en servidor:", updateData.hora_cambio_estado);
     }
 
-    if (hora_ultima_modificacion_contabilidad !== undefined) {
-      updateData.hora_ultima_modificacion_contabilidad = hora_ultima_modificacion_contabilidad;
-      console.log("⏰ Actualizando hora_ultima_modificacion_contabilidad:", hora_ultima_modificacion_contabilidad);
+    // ✅ Si se hacen cambios de contabilidad, calcular hora_ultima_modificacion_contabilidad
+    // Nota: Asumiendo que "cambios de contabilidad" incluyen observacionC, factura, numero_causacion, categoria_gasto
+    const hayCambiosContabilidad = observacionC !== undefined || factura !== undefined || numero_causacion !== undefined || categoria_gasto !== undefined;
+    if (hayCambiosContabilidad) {
+      updateData.hora_ultima_modificacion_contabilidad = calcularTiempoBogota();
+      console.log("⏰ Calculando hora_ultima_modificacion_contabilidad en servidor:", updateData.hora_ultima_modificacion_contabilidad);
     }
 
     console.log("📝 PASO 2: Datos finales para actualizar:", updateData);
