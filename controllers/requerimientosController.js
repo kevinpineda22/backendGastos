@@ -407,7 +407,7 @@ export const obtenerRequerimientos = async (req, res) => {
   }
 };
 
-// ✅ Actualizar requerimiento (corregido para manejar campos de tiempo correctamente)
+// ✅ Actualizar requerimiento (modificado para capturar aprobador)
 export const actualizarRequerimiento = async (req, res) => {
   const { id } = req.params;
   const {
@@ -419,11 +419,12 @@ export const actualizarRequerimiento = async (req, res) => {
     numero_causacion,
     factura,
     categoria_gasto,
-    // ❌ REMOVIDO: Ya no recibir hora_cambio_estado ni hora_ultima_modificacion_contabilidad del frontend
+    correo_empleado, // ✅ IMPORTANTE: Este es quien HACE el cambio
   } = req.body;
 
   console.log("=== INICIANDO ACTUALIZACIÓN ===");
   console.log("ID recibido:", id);
+  console.log("📧 Correo de quien hace el cambio:", correo_empleado);
   console.log("Datos a actualizar:", {
     estado,
     observacion,
@@ -433,8 +434,6 @@ export const actualizarRequerimiento = async (req, res) => {
     numero_causacion,
     factura,
     categoria_gasto,
-    // hora_cambio_estado, // ✅ REMOVIDO
-    // hora_ultima_modificacion_contabilidad, // ✅ REMOVIDO
   });
 
   // Validar formato UUID básico
@@ -495,22 +494,42 @@ export const actualizarRequerimiento = async (req, res) => {
     if (factura !== undefined) updateData.factura = factura;
     if (categoria_gasto !== undefined) updateData.categoria_gasto = categoria_gasto;
 
-    // ✅ NUEVO: Calcular tiempos en zona horaria de Bogotá (UTC-5) en el servidor
     const calcularTiempoBogota = () => {
       const now = new Date();
-      const bogotaOffset = -5 * 60 * 60 * 1000; // UTC-5 en milisegundos
+      const bogotaOffset = -5 * 60 * 60 * 1000;
       const bogotaTime = new Date(now.getTime() + bogotaOffset);
       return bogotaTime.toISOString();
     };
 
-    // ✅ Si se cambia el estado, calcular hora_cambio_estado
-    if (estado !== undefined && estado !== existingRecord.estado) {
+    // ✅ NUEVO: Si se cambia el estado a Necesario o No necesario, capturar quién lo hizo
+    if (estado !== undefined && 
+        estado !== existingRecord.estado && 
+        (estado === 'Necesario' || estado === 'No necesario')) {
+      
       updateData.hora_cambio_estado = calcularTiempoBogota();
+      
+      // ✅ CAPTURAR QUIÉN APROBÓ/RECHAZÓ
+      if (correo_empleado) {
+        updateData.aprobado_por_correo = correo_empleado;
+        
+        // ✅ Intentar obtener el nombre desde la tabla profiles
+        const nombreAprobador = await obtenerNombreUsuario(correo_empleado);
+        
+        if (nombreAprobador) {
+          updateData.aprobado_por_nombre = nombreAprobador;
+          console.log(`✅ Aprobación registrada por: ${nombreAprobador} (${correo_empleado})`);
+        } else {
+          // Fallback: usar el correo si no se encuentra el nombre
+          updateData.aprobado_por_nombre = correo_empleado;
+          console.log(`⚠️ No se encontró nombre en profiles, usando correo: ${correo_empleado}`);
+        }
+      }
+      
       console.log("⏰ Calculando hora_cambio_estado en servidor:", updateData.hora_cambio_estado);
+      console.log("👤 Aprobado por:", updateData.aprobado_por_nombre);
     }
 
-    // ✅ Si se hacen cambios de contabilidad, calcular hora_ultima_modificacion_contabilidad
-    // Nota: Asumiendo que "cambios de contabilidad" incluyen observacionC, factura, numero_causacion, categoria_gasto
+    // Si se hacen cambios de contabilidad
     const hayCambiosContabilidad = observacionC !== undefined || factura !== undefined || numero_causacion !== undefined || categoria_gasto !== undefined;
     if (hayCambiosContabilidad) {
       updateData.hora_ultima_modificacion_contabilidad = calcularTiempoBogota();
@@ -1125,5 +1144,26 @@ export const editarTiempoFechaPago = async (req, res) => {
   } catch (err) {
     console.error("❌ [BACKEND] Error general en editarTiempoFechaPago:", err);
     return res.status(500).json({ error: "Hubo un problema al actualizar." });
+  }
+};
+
+// ✅ NUEVO: Función para obtener el nombre del usuario desde la tabla profiles
+const obtenerNombreUsuario = async (correo) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('nombre')
+      .eq('correo', correo)
+      .single();
+
+    if (error) {
+      console.warn(`⚠️ No se pudo obtener nombre para ${correo}:`, error);
+      return null;
+    }
+
+    return data?.nombre || null;
+  } catch (err) {
+    console.error('Error obteniendo nombre de usuario:', err);
+    return null;
   }
 };
