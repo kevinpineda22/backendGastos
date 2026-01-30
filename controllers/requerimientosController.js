@@ -268,9 +268,7 @@ export const crearRequerimiento = async (req, res) => {
                       .join("<br>")}</td></tr>
                   </table>
                   <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-                  <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(
-                    token
-                  )}" class="button">Aprobar/Rechazar</a>
+                  <a href="https://www.merkahorro.com/login" class="button">Aprobar/Rechazar</a>
                   <div style="padding: 10px; font-style: italic;">
                     <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
                     <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>

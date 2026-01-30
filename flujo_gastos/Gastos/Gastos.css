@@ -1,0 +1,780 @@
+/* Gastos.css - Diseño Moderno y Profesional para Merkahorro */
+
+/* Variables de Colores */
+:root {
+  --primary-color: #89dc00; /* Verde Merkahorro */
+  --secondary-color: #210d65; /* Azul Oscuro Merkahorro */
+  --light-color: #f4f4f9;
+  --text-color: #333;
+  --error-color: #e63946;
+  --success-color: #89dc00;
+  --background-color: #f0f2f5;
+  --border-color: #e0e0e0;
+  --hover-color: #76c400;
+}
+
+/* Estilo para la frase motivacional */
+.fraseMotivacional {
+  color: rgb(77, 74, 74);
+  margin-bottom: 30px;
+  margin-top: -15px;
+  font-size: 0.9rem;
+  text-align: center;
+  font-family: "Georgia", serif;
+  opacity: 0;
+  animation: fadeInMotivational 2s ease-in-out forwards;
+}
+
+/* Definición de la animación */
+@keyframes fadeInMotivational {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Contenedor principal */
+.gastos-container {
+  background-color: var(--background-color);
+  height: 100%;
+  padding: 20px 20px;
+}
+
+/* Estilos Únicos del Logo para Gastos */
+.gastos-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.gastos-logo-img {
+  width: 250px; /* Tamaño ajustado específicamente para este panel */
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.gastos-logo-img:hover {
+  transform: scale(1.05);
+}
+
+/* Header */
+.gastos-header {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 30px;
+  margin-top: 20px;
+  color: var(--secondary-color);
+  font-weight: 800;
+  text-transform: uppercase;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Container */
+.gastos-form-container {
+  max-width: 850px;
+  margin: 25px auto;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px var(--secondary-color);
+  background-color: #fff;
+}
+
+/* Form Title */
+.gastos-form-title {
+  font-size: 2.2rem;
+  margin-bottom: 25px;
+  color: var(--secondary-color);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Form Fields */
+.gastos-form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+/* Labels */
+.gastos-label {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+}
+
+/* Inputs */
+.gastos-input {
+  padding: 14px 16px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.gastos-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px rgba(137, 220, 0, 0.4);
+  outline: none;
+}
+
+/* Botón de Enviar */
+.gastos-submit-button {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 14px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
+  display: block;
+  margin-left: auto;
+  margin-top: 20px;
+}
+
+.gastos-submit-button:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+}
+
+/* Botón flotante para archivos */
+.gastos-flotante-button {
+  position: fixed;
+  bottom: 25px;
+  right: 20px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  z-index: 1000;
+}
+
+.gastos-flotante-button:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+/* Botón flotante para historial */
+.historial-flotante-button {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  z-index: 1000;
+}
+
+.historial-flotante-button:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+/* Botón flotante para dashboard */
+.dashboard-flotante-button {
+  position: fixed;
+  bottom: 175px;
+  right: 20px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  z-index: 1000;
+}
+
+.dashboard-flotante-button:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+/* Lista desplegable de archivos PDF */
+.gastos-archivos-desplegados {
+  position: fixed;
+  bottom: 75px;
+  right: 20px;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.gastos-archivos-desplegados ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gastos-archivos-desplegados li {
+  margin-bottom: 10px;
+}
+
+.gastos-archivos-desplegados a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.gastos-archivos-desplegados a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+/* Dashboard Layout */
+.gastos-dashboard {
+  max-width: 1400px;
+  margin: 50px auto 100px;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  animation: fadeInDashboard 0.5s ease-in-out;
+  margin-top: 50px; /* Agregar margen superior para separación */
+}
+
+@keyframes fadeInDashboard {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gastos-dashboard h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Filtros */
+.dashboard-filtros-toggle {
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--secondary-color);
+  margin-bottom: 10px;
+  transition: color 0.3s ease;
+}
+
+.dashboard-filtros-toggle:hover {
+  color: var(--primary-color);
+}
+
+.toggle-icon {
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.toggle-filtros-button {
+  background-color: var(--secondary-color);
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.toggle-filtros-button:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+}
+
+.dashboard-filtros {
+  background-color: var(--light-color);
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-filtros h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--secondary-color);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.filtros-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filtro-item label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+.filtro-item input,
+.filtro-item select {
+  padding: 12px 14px;
+  font-size: 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.filtro-item input:focus,
+.filtro-item select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 8px rgba(137, 220, 0, 0.4);
+  outline: none;
+}
+
+.reset-filtros-button {
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: var(--error-color);
+  color: #fff;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  align-self: center;
+  margin-top: 10px;
+}
+
+.reset-filtros-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .filtros-form {
+    grid-template-columns: 1fr;
+  }
+
+  .filtro-item {
+    width: 100%;
+  }
+}
+
+/* estadisticas( total - promedio - solicitudes - tasa ) Section */
+.dashboard-stats {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 35px;
+  flex-wrap: wrap;
+}
+
+.stat-cards-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.stat-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card h3 {
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+  color: var(--secondary-color);
+}
+
+.stat-card p {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+/* Secciones del dashboard */
+.dashboard-section {
+  margin-bottom: 40px;
+}
+
+.dashboard-section h3 {
+  font-size: 1.5rem;
+  color: var(--secondary-color);
+  margin-bottom: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Charts Section */
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.chart-container {
+  width: 50px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chart-container h4 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: var(--secondary-color);
+}
+
+.chart-container canvas {
+  max-height: 400px; /* Prevent infinite height */
+  width: 100%;
+}
+
+.chart-container.full-width {
+  grid-column: 1 / -1;
+}
+
+.download-chart-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.download-chart-button:hover {
+  background-color: var(--hover-color);
+}
+
+/* Mensajes de estado */
+.gastos-submitted-message {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--success-color);
+  color: #fff;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.gastos-error-message {
+  text-align: center;
+  padding: 18px;
+  background-color: var(--error-color);
+  color: #fff;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+/* Estilos para los modales de historial y dashboard */
+.modal-overlay-gastos {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-content-gastos {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1400px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header-gastos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  background-color: #f8f9fa;
+}
+
+.modal-header-gastos h2 {
+  margin: 0;
+  color: #210d65;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.modal-close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.modal-close-button:hover {
+  background-color: #e74c3c;
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-body-gastos {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Estilos específicos para modal de historial */
+.historial-modal {
+  max-width: 1200px;
+}
+
+.historial-modal .modal-body-gastos {
+  padding: 20px;
+}
+
+/* Estilos específicos para modal de dashboard */
+.dashboard-modal {
+  max-width: 1600px;
+  width: 98%;
+}
+
+.dashboard-modal .modal-body-gastos {
+  padding: 0;
+}
+
+/* Ajustes para el dashboard dentro del modal */
+.dashboard-modal .dashboard-gasto-mk-container {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 20px;
+}
+
+/* Ajustes responsivos para modales */
+@media (max-width: 768px) {
+  .modal-overlay-gastos {
+    padding: 10px;
+  }
+
+  .modal-content-gastos {
+    width: 98%;
+    max-height: 95vh;
+  }
+
+  .modal-header-gastos {
+    padding: 15px 20px;
+  }
+
+  .modal-header-gastos h2 {
+    font-size: 1.4rem;
+  }
+
+  .dashboard-modal .dashboard-gasto-mk-container {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content-gastos {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-header-gastos {
+    padding: 10px 15px;
+  }
+
+  .modal-header-gastos h2 {
+    font-size: 1.2rem;
+  }
+}
+
+/* Ajustes para que el historial se vea bien en el modal */
+.modal-body-gastos .historial-container {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.modal-body-gastos .historial-item {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mejorar visibilidad de botones flotantes */
+.historial-flotante-button,
+.dashboard-flotante-button {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.historial-flotante-button:hover,
+.dashboard-flotante-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .gastos-container {
+    padding: 20px;
+  }
+
+  .gastos-header {
+    font-size: 2.2rem;
+  }
+
+  .gastos-form-container {
+    padding: 25px;
+  }
+
+  .gastos-flotante-button,
+  .historial-flotante-button,
+  .dashboard-flotante-button {
+    width: 55px;
+    height: 55px;
+    font-size: 1.4rem;
+  }
+
+  .dashboard-filtros {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .filtro-item {
+    width: 100%;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+}

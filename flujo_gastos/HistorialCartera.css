@@ -1,0 +1,679 @@
+/* =============================== */
+/*     Variables de Colores        */
+/* =============================== */
+:root {
+  --primary-color: #89dc00;    /* Verde Merkahorro */
+  --secondary-color: #210d65;  /* Azul Oscuro Merkahorro */
+  --light-color: #f4f4f9;      /* Fondo claro */
+  --text-color: #333;          /* Color de texto principal */
+  --error-color: #e63946;      /* Rojo para errores */
+  --success-color: #89dc00;    /* Verde para éxito */
+  --background-color: #f0f2f5; /* Fondo general */
+  --border-color: #e0e0e0;     /* Bordes */
+  --hover-color: #76c400;      /* Verde más oscuro para hover */
+  --shadow-light: rgba(0, 0, 0, 0.1); /* Sombra suave */
+  --shadow-medium: rgba(0, 0, 0, 0.15); /* Sombra media */
+}
+
+/* =============================== */
+/*  Estilos Compartidos (Base)     */
+/* =============================== */
+.cartera-historial {
+  background-color: var(--background-color);
+  min-height: 100vh;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Header de la vista */
+.cartera-header {
+  text-align: center;
+  font-size: 2.8rem;
+  margin: 20px 0 30px;
+  color: var(--secondary-color);
+  font-weight: 800;
+  text-transform: uppercase;
+  text-shadow: 0 2px 3px var(--shadow-light);
+}
+
+/* Contenedor y estilo de la tabla del historial */
+.cartera-historial-table {
+  max-width: 2000px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 20px;
+  background-color: #fff;
+  box-shadow: 0 12px 24px var(--shadow-light);
+  overflow-x: auto;
+}
+
+.cartera-historial-table h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.cartera-historial-table table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 5px;
+  table-layout: auto;
+}
+
+.cartera-historial-table th,
+.cartera-historial-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+/* Anchos fijos para columnas importantes */
+.cartera-historial-table th:nth-child(8),
+.cartera-historial-table td:nth-child(8) {
+  min-width: 300px;
+  max-width: 500px;
+  word-wrap: break-word;
+}
+
+/* columna categoria de gasto */
+.cartera-historial-table th:nth-child(17),
+.cartera-historial-table td:nth-child(17) {
+  min-width: 300px;
+  max-width: 500px;
+  word-wrap: break-word;
+}
+
+.cartera-historial-table th:nth-child(14),
+.cartera-historial-table td:nth-child(14) {
+  min-width: 150px;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.cartera-historial-table th {
+  background-color: var(--secondary-color);
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.cartera-historial-table tr:nth-child(even) {
+  background-color: var(--light-color);
+}
+
+.cartera-historial-table tr:hover {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+.cartera-historial-table a {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Mensajes de estado */
+.cartera-submitted-message {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--success-color);
+  color: #fff;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.cartera-error-message {
+  text-align: center;
+  padding: 18px;
+  background-color: var(--error-color);
+  color: #fff;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+/* =============================== */
+/*       Responsive Design         */
+/* =============================== */
+@media (max-width: 768px) {
+  .cartera-historial {
+    padding: 15px;
+  }
+  .cartera-header {
+    font-size: 2.2rem;
+  }
+  .cartera-historial-table {
+    padding: 15px;
+  }
+  .cartera-historial-table h2 {
+    font-size: 1.5rem;
+  }
+  .cartera-historial-table th,
+  .cartera-historial-table td {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cartera-historial-table th,
+  .cartera-historial-table td {
+    font-size: 0.75rem;
+    padding: 6px;
+  }
+}
+
+/* =============================== */
+/*       Scroll Horizontal         */
+/* =============================== */
+.scroll-container-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background-color: var(--secondary-color);
+  border-radius: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background-color: var(--light-color);
+}
+
+.scroll-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  width: 40px;
+  border: none;
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.scroll-button:hover {
+  opacity: 1;
+}
+
+.scroll-button.left {
+  left: 15px;
+}
+
+.scroll-button.right {
+  right: 15px;
+}
+
+/* =============================== */
+/*  Buscador y Exportación         */
+/* =============================== */
+.busqueda-export-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.search-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  position: relative;
+}
+
+/* Botón de toggle (lupa) */
+.search-toggle {
+  background: var(--light-color);
+  border: none;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 1.4rem;
+  color: var(--secondary-color);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px var(--shadow-light);
+  position: relative;
+  z-index: 2;
+}
+
+.search-toggle:hover {
+  transform: scale(1.15);
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 4px 8px var(--shadow-medium);
+}
+
+.search-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Input de búsqueda */
+.search-input {
+  width: 0;
+  opacity: 0;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: var(--light-color);
+  font-size: 0.9rem;
+  color: var(--text-color);
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  position: absolute;
+  left: 45px; /* Ajustado para que salga desde la derecha de la lupa */
+  height: 36px;
+  box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+.search-input.visible {
+  width: 250px;
+  opacity: 1;
+  padding: 8px 12px;
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 2px 8px rgba(137, 220, 0, 0.2);
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* Botón para exportar a Excel */
+.excel-button-cartera {
+  padding: 12px 25px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 3px 6px var(--shadow-medium);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.excel-button-cartera:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px var(--shadow-medium);
+}
+
+/* =============================== */
+/*   Estilos para Voucher Section  */
+/* =============================== */
+.voucher-section {
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.view-vouchers-button {
+  padding: 4px 8px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+}
+
+.view-vouchers-button:hover {
+  background-color: var(--hover-color);
+}
+
+.voucher-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* =============================== */
+/*   Estilos para Voucher Modal    */
+/* =============================== */
+.voucher-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.voucher-modal-content {
+  background-color: var(--light-color);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px var(--shadow-medium);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.voucher-modal-content h3 {
+  color: var(--secondary-color);
+  margin-bottom: 15px;
+}
+
+.vouchers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.voucher-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.close-modal-button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal-button:hover {
+  background-color: var(--hover-color);
+}
+
+/* =============================== */
+/*   Estilos para Dropzone/File    */
+/* =============================== */
+.dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: 6px;
+  padding: 4px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  color: var(--text-color);
+  font-size: 0.8rem;
+  min-height: 30px;
+  width: 80px;
+}
+
+.dropzone:hover {
+  border-color: var(--secondary-color);
+  background-color: #f9f9f9;
+}
+
+.dropzone.active {
+  border-color: var(--primary-color);
+  background-color: rgba(137, 220, 0, 0.1);
+}
+
+.dropzone p {
+  margin: 0;
+}
+
+/* =============================== */
+/*   Botón para eliminar Voucher   */
+/* =============================== */
+.delete-voucher-button {
+  padding: 4px 8px;
+  background-color: var(--error-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+}
+
+.delete-voucher-button:hover {
+  background-color: #c5303e;
+}
+
+/* =============================== */
+/*   Estilos para Webcam Button    */
+/* =============================== */
+.webcam-button {
+  padding: 4px 8px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+}
+
+.webcam-button:hover {
+  background-color: var(--hover-color);
+}
+
+/* =============================== */
+/*   Estilos para react-toastify   */
+/* =============================== */
+.Toastify__toast {
+  font-family: 'Arial', sans-serif;
+  font-size: 1rem;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 12px var(--shadow-light);
+}
+
+.Toastify__toast--info {
+  background-color: var(--secondary-color);
+  color: #fff;
+}
+
+.Toastify__toast--success {
+  background-color: var(--success-color);
+  color: #fff;
+}
+
+.Toastify__toast--error {
+  background-color: var(--error-color);
+  color: #fff;
+}
+
+.Toastify__close-button {
+  color: #fff;
+  opacity: 0.8;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
+
+.Toastify__toast-container--bottom-right {
+  bottom: 1em;
+  right: 1em;
+}
+
+/* =============================== */
+/*   Estilos para el botón en Toast */
+/* =============================== */
+.toast-send-button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.toast-send-button:hover {
+  background-color: var(--hover-color);
+}
+
+.toast-send-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* =============================== */
+/*   Estilos para el Modal de Webcam */
+/* =============================== */
+.webcam-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--light-color);
+  padding: 20px;
+  border: 2px solid var(--secondary-color);
+  border-radius: 10px;
+  z-index: 2000;
+  box-shadow: 0 5px 15px var(--shadow-medium);
+  width: 90%;
+  max-width: 600px;
+}
+
+.webcam-modal video,
+.webcam-modal canvas {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.webcam-controls {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.webcam-controls button {
+  padding: 8px 16px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.webcam-controls button:hover {
+  background-color: var(--hover-color);
+}
+
+.webcam-controls button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* =============================== */
+/*   Estilos para Botón Ver PDF    */
+/* =============================== */
+.view-pdf-button-cartera {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: var(--secondary-color);
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  width: 100%;
+}
+
+.view-pdf-button-cartera:hover {
+  background-color: var(--hover-color);
+  color: white;
+  text-decoration: none;
+}
+
+/* Especificidad para la columna Cotización */
+.cartera-historial-table td:nth-child(13) .view-pdf-button-cartera {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+}
+
+.cartera-historial-table td:nth-child(13) .view-pdf-button-cartera:hover {
+  background-color: var(--hover-color);
+  color: white;
+}
+
+.cartera-historial-table a:hover {
+  text-decoration: underline;
+}
+
+/* =============================== */
+/*   Estilos para Estado Cartera   */
+/* =============================== */
+.estado-cartera-pendiente {
+  background-color: #ebd076e3; /* Amarillo claro */
+  color: #856404;
+}
+
+.estado-cartera-anticipo {
+  background-color: #7db3ece7; /* Azul claro */
+  color: #004085;
+}
+
+.estado-cartera-cancelado {
+  background-color:  #5aff81b6; /* Verde claro */
+  color: #155724;
+}
+
+.estado-cartera-select {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.estado-cartera-select:hover {
+  border-color: var(--secondary-color);
+}
+
+.estado-cartera-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(137, 220, 0, 0.5);
+}
