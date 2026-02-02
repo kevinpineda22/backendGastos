@@ -588,9 +588,9 @@ export const actualizarRequerimiento = async (req, res) => {
 
 // ✅ Decidir requerimiento (aprobar/rechazar)
 export const decidirRequerimiento = async (req, res) => {
-  const { token, decision, observacion } = req.body;
+  const { token, decision, observacion, hora_cambio_estado, aprobador_correo } = req.body;
 
-  console.log("Datos recibidos:", { token, decision, observacion });
+  console.log("Datos recibidos para decisión:", { token, decision, observacion, aprobador_correo });
 
   try {
     const { data, error } = await supabase
@@ -604,12 +604,37 @@ export const decidirRequerimiento = async (req, res) => {
       return res.status(404).json({ error: "Requerimiento no encontrado" });
     }
 
+    // 🕵️‍♂️ Determinar quién está aprobando
+    let correoFinal = aprobador_correo;
+    
+    // Si no enviaron correo (usuario no logueado), inferimos que es el jefe directo
+    if (!correoFinal) {
+      correoFinal = obtenerJefePorEmpleado(data.correo_empleado);
+      console.log(`⚠️ No se recibió aprobador_correo, asumiendo jefe directo: ${correoFinal}`);
+    }
+
+    // Obtener nombre del aprobador
+    let nombreFinal = null;
+    if (correoFinal) {
+      nombreFinal = await obtenerNombreUsuario(correoFinal);
+      if (!nombreFinal) nombreFinal = correoFinal; // Fallback al correo si no hay nombre
+    }
+
+    // Preparar objeto de actualización
+    const updateData = {
+      estado: decision,
+      observacion: observacion,
+      hora_cambio_estado: hora_cambio_estado || new Date().toISOString(), // Usar la del front o generar nueva
+    };
+
+    if (correoFinal) updateData.aprobado_por_correo = correoFinal;
+    if (nombreFinal) updateData.aprobado_por_nombre = nombreFinal;
+
+    console.log("📝 Actualizando requerimiento con:", updateData);
+
     const { error: updateError } = await supabase
       .from("Gastos")
-      .update({
-        estado: decision,
-        observacion: observacion,
-      })
+      .update(updateData)
       .eq("token", token);
 
     if (updateError) {
