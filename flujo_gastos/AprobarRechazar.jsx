@@ -206,10 +206,10 @@ const AprobarRechazar = () => {
                     <div className="ap-description-box">
                         <p>{requerimiento.descripcion}</p>
                     </div>
-                    {requerimiento.observacion && (
+                    {requerimiento.observacion_responsable && (
                         <div className="ap-observation-box">
                             <span className="ap-observation-label">Observación Responsable:</span>
-                            <p>{requerimiento.observacion}</p>
+                            <p>{requerimiento.observacion_responsable}</p>
                         </div>
                     )}
                 </div>

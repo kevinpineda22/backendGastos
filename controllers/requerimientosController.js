@@ -620,11 +620,18 @@ export const decidirRequerimiento = async (req, res) => {
       if (!nombreFinal) nombreFinal = correoFinal; // Fallback al correo si no hay nombre
     }
 
+    const calcularTiempoBogota = () => {
+      const now = new Date();
+      const bogotaOffset = -5 * 60 * 60 * 1000;
+      const bogotaTime = new Date(now.getTime() + bogotaOffset);
+      return bogotaTime.toISOString();
+    };
+
     // Preparar objeto de actualización
     const updateData = {
       estado: decision,
       observacion: observacion,
-      hora_cambio_estado: hora_cambio_estado || new Date().toISOString(), // Usar la del front o generar nueva
+      hora_cambio_estado: calcularTiempoBogota(),
     };
 
     if (correoFinal) updateData.aprobado_por_correo = correoFinal;
