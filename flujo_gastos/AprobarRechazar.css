@@ -1,0 +1,317 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Si prefieres Poppins, cambia a:
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+*/
+
+:root {
+  /* Colores principales */
+  --ar-primary-color: #4CAF50; /* Verde vibrante para aprobación */
+  --ar-secondary-color: #263238; /* Azul oscuro/gris para texto principal y fondos */
+  --ar-accent-color: #007bff; /* Azul para elementos interactivos y resaltados */
+  --ar-danger-color: #dc3545; /* Rojo para rechazo y errores */
+
+  /* Colores de fondo y texto */
+  --ar-bg-light: #f8f9fa; /* Fondo muy claro */
+  --ar-bg-gradient-start: #e0eafc; /* Degradado suave */
+  --ar-bg-gradient-end: #cfdef3;
+  --ar-white: #ffffff;
+  --ar-text-dark: #343a40;
+  --ar-text-light: #6c757d;
+  --ar-border-color: #e9ecef;
+
+  /* Sombras */
+  --ar-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --ar-shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  --ar-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.15);
+
+  /* Transiciones */
+  --ar-transition-fast: all 0.2s ease-in-out;
+  --ar-transition-normal: all 0.3s ease-in-out;
+}
+
+/* Contenedor principal con gradiente */
+.ar-container {
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--ar-bg-gradient-start), var(--ar-bg-gradient-end));
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  color: var(--ar-text-dark);
+}
+
+/* Logo con tamaño adaptable */
+.ar-logo-container {
+  margin-bottom: 40px; /* Más espacio */
+}
+
+.ar-logo-container img {
+  width: 100%;
+  max-width: 200px; /* Un poco más grande */
+  height: auto;
+  animation: ar-fadeIn 1s ease-in-out;
+  border-radius: 8px; /* Pequeño redondeo al logo */
+  box-shadow: var(--ar-shadow-sm);
+}
+
+@keyframes ar-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Encabezado elegante */
+.ar-header {
+  font-size: 2.2rem; /* Tamaño más grande */
+  font-weight: 700;
+  color: var(--ar-secondary-color);
+  margin-bottom: 30px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Formulario como tarjeta */
+.ar-form {
+  width: 100%;
+  max-width: 650px; /* Un poco más ancho */
+  padding: 35px; /* Más padding */
+  background: var(--ar-white);
+  border-radius: 15px; /* Más redondeado */
+  box-shadow: var(--ar-shadow-md);
+  transition: var(--ar-transition-normal);
+  border: 1px solid var(--ar-border-color);
+}
+
+.ar-form[aria-disabled='true'] {
+  opacity: 0.6; /* Más opaco */
+  pointer-events: none;
+  transform: scale(0.98); /* Ligeramente más pequeño */
+}
+
+/* Grupos de formulario */
+.ar-form-group {
+  margin-bottom: 25px; /* Más espacio */
+}
+
+.ar-form-label {
+  display: block;
+  font-size: 1.1rem; /* Más grande */
+  font-weight: 600;
+  color: var(--ar-text-dark);
+  margin-bottom: 10px;
+}
+
+/* Campo de observación */
+.ar-observacion-input {
+  width: 100%;
+  padding: 15px; /* Más padding */
+  border: 1px solid var(--ar-border-color);
+  border-radius: 10px; /* Más redondeado */
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 120px; /* Más alto */
+  transition: var(--ar-transition-normal);
+  background-color: var(--ar-bg-light); /* Fondo suave */
+  color: var(--ar-text-dark);
+}
+
+.ar-observacion-input:focus {
+  border-color: var(--ar-accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Sombra de enfoque */
+  outline: none;
+  background-color: var(--ar-white);
+}
+
+.ar-observacion-input::placeholder {
+  color: var(--ar-text-light);
+  font-style: italic;
+}
+
+/* Contenedor de botones */
+.ar-decision-buttons {
+  display: flex;
+  gap: 20px; /* Más espacio entre botones */
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Estilo base para botones */
+.ar-decision-btn {
+  flex: 1;
+  padding: 15px 25px; /* Más padding */
+  font-size: 1.1rem; /* Más grande */
+  font-weight: 600;
+  border: none;
+  border-radius: 10px; /* Más redondeado */
+  cursor: pointer;
+  color: var(--ar-white);
+  transition: var(--ar-transition-normal);
+  box-shadow: var(--ar-shadow-sm);
+  max-width: 200px; /* Ancho máximo para que no se estiren demasiado */
+}
+
+/* Botón Aprobar */
+.ar-btn-approve {
+  background: linear-gradient(90deg, var(--ar-primary-color), #3e8e41);
+}
+
+.ar-btn-approve:hover:not(:disabled) {
+  background: linear-gradient(90deg, #3e8e41, var(--ar-primary-color));
+  transform: translateY(-3px);
+  box-shadow: var(--ar-shadow-md);
+}
+
+/* Botón Rechazar */
+.ar-btn-reject {
+  background: linear-gradient(90deg, var(--ar-danger-color), #c82333);
+}
+
+.ar-btn-reject:hover:not(:disabled) {
+  background: linear-gradient(90deg, #c82333, var(--ar-danger-color));
+  transform: translateY(-3px);
+  box-shadow: var(--ar-shadow-md);
+}
+
+.ar-decision-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Mensaje de resultado */
+.ar-mensaje {
+  margin-top: 30px; /* Más espacio */
+  font-size: 1.15rem;
+  text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  line-height: 1.6;
+  animation: ar-scaleIn 0.5s ease-out;
+  box-shadow: var(--ar-shadow-sm);
+}
+
+@keyframes ar-scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ar-mensaje-aprobado {
+  color: #155724; /* Verde oscuro */
+  background: #d4edda; /* Verde claro */
+  border: 1px solid #c3e6cb;
+}
+
+.ar-mensaje-rechazado,
+.ar-mensaje-error { /* Clase para errores generales también */
+  color: #721c24; /* Rojo oscuro */
+  background: #f8d7da; /* Rojo claro */
+  border: 1px solid #f5c6cb;
+}
+
+/* Spinner de carga */
+.ar-loading-spinner {
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--ar-accent-color); /* Color del spinner */
+  border-radius: 50%;
+  width: 40px; /* Más grande */
+  height: 40px;
+  animation: ar-spin 1s linear infinite;
+  margin: 30px auto 0 auto; /* Más margen */
+}
+
+@keyframes ar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .ar-container {
+    padding: 15px;
+  }
+
+  .ar-header {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+
+  .ar-form {
+    padding: 25px;
+    margin: 0 10px;
+  }
+
+  .ar-form-label {
+    font-size: 1rem;
+  }
+
+  .ar-observacion-input {
+    padding: 10px;
+    font-size: 0.95rem;
+    min-height: 100px;
+  }
+
+  .ar-decision-buttons {
+    flex-direction: column; /* Apilar botones en móvil */
+    gap: 12px;
+  }
+
+  .ar-decision-btn {
+    width: 100%;
+    max-width: none; /* Eliminar restricción de ancho */
+    font-size: 1rem;
+    padding: 12px 20px;
+  }
+
+  .ar-mensaje {
+    font-size: 1rem;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ar-logo-container img {
+    max-width: 150px;
+  }
+  .ar-header {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+  .ar-form {
+    padding: 15px;
+  }
+  .ar-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border-width: 3px;
+  }
+}
+
+/* Accesibilidad: Reducir animaciones si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+  .ar-logo-container img,
+  .ar-form,
+  .ar-decision-btn,
+  .ar-loading-spinner,
+  .ar-mensaje {
+    animation: none !important;
+    transition: none !important;
+  }
+}

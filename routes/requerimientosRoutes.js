@@ -12,6 +12,7 @@ import {
   actualizarEstadoCartera, // Nueva importación
   editarCotizacion,
   editarTiempoFechaPago,
+  obtenerRequerimientoPorToken, // Nueva función
 } from "../controllers/requerimientosController.js";
 import multer from "multer";
 
@@ -49,6 +50,7 @@ router.post("/eliminarVoucher", eliminarVoucher);
 router.put("/actualizarEstadoCartera", actualizarEstadoCartera);
 
 // Otras rutas
+router.get("/obtenerPorToken/:token", obtenerRequerimientoPorToken); // Nueva ruta
 router.post("/decidirRequerimiento", decidirRequerimiento);
 router.put("/:id", actualizarRequerimiento);
 router.get("/obtenerRequerimientos", obtenerRequerimientos);

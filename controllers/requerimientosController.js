@@ -43,6 +43,7 @@ const userPermissions = {
   "operaciones@merkahorrosas.com": { role: "director" },
   "contabilidad1@merkahorrosas.com": { role: "director" },
   "juanmerkahorro@gmail.com": { role: "director" },
+  "gerencia1@merkahorrosas.com": { role: "director" },
   "johanmerkahorro777@gmail.com": { role: "contabilidad" },
   "contabilidad@merkahorrosas.com": { role: "contabilidad" },
 };
@@ -268,7 +269,9 @@ export const crearRequerimiento = async (req, res) => {
                       .join("<br>")}</td></tr>
                   </table>
                   <p style="margin-top: 20px;">Para aprobar o rechazar el requerimiento, haz clic en el siguiente enlace:</p>
-                  <a href="https://www.merkahorro.com/login" class="button">Aprobar/Rechazar</a>
+                   <a href="https://www.merkahorro.com/aprobarrechazar?token=${encodeURIComponent(
+                    token
+                  )}" class="button">Aprobar/Rechazar</a>
                   <div style="padding: 10px; font-style: italic;">
                     <p>"Procura que todo aquel que llegue a ti, salga de tus manos mejor y más feliz."</p>
                     <p><strong>📜 Autor:</strong> Madre Teresa de Calcuta</p>
@@ -1165,3 +1168,27 @@ const obtenerNombreUsuario = async (correo) => {
     return null;
   }
 };
+
+// ✅ Obtener requerimiento por token (para vista pública de aprobar/rechazar)
+export const obtenerRequerimientoPorToken = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from("Gastos")
+      .select("*")
+      .eq("token", token)
+      .single();
+
+    if (error || !data) {
+      console.error("❌ Error al buscar requerimiento por token:", error);
+      return res.status(404).json({ error: "Requerimiento no encontrado o token inválido." });
+    }
+
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error("❌ Error al obtener el requerimiento por token:", error);
+    return res.status(500).json({ error: "Error interno al obtener la información del requerimiento." });
+  }
+};
+
