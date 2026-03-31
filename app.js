@@ -23,7 +23,7 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma'],
   credentials: true,
 }));
