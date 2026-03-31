@@ -2,21 +2,41 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import requerimientosRoutes from "./routes/requerimientosRoutes.js";
 
 dotenv.config();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://merkahorro.com',
+  'https://www.merkahorro.com',
+];
+
 const app = express();
 
-app.use(cors({ origin: "*" }));
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS no permitido'), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
 
-// Configuración de CORS para permitir solicitudes desde cualquier dominio
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // Permite solicitudes de cualquier origen
-  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH"); // Permite métodos específicos
-  res.header("Access-Control-Allow-Headers", "Content-Type"); // Permite encabezados específicos
-  next(); // Continúa al siguiente middleware o ruta
+// Rate limiting global
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Demasiadas solicitudes, intenta más tarde.' },
 });
+app.use(globalLimiter);
 
 // Configuración de middlewares
 app.use(bodyParser.json());
