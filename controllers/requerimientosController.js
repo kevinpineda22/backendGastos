@@ -25,7 +25,7 @@ const gruposLideres = {
     "comercial@merkahorrosas.com",
     "paginaweb@merkahorrosas.com",
   ],
-  "gestionhumana@merkahorrosas.com": [
+  "gestionhumana@merkahorro.com": [
     "asistentegh@merkahorrosas.com",
     "sistemageneralsst@merkahorrosas.com",
     "analistadebienestar@merkahorrosas.com",
@@ -39,7 +39,7 @@ const gruposLideres = {
 // Definir roles de usuarios para permisos
 const userPermissions = {
   "carteraytesoreria@merkahorrosas.com": { role: "director" },
-  "gestionhumana@merkahorrosas.com": { role: "director" },
+  "gestionhumana@merkahorro.com": { role: "director" },
   "operaciones@merkahorrosas.com": { role: "director" },
   "contabilidad1@merkahorrosas.com": { role: "director" },
   "juanmerkahorro@gmail.com": { role: "director" },
