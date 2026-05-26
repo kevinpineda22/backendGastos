@@ -1,0 +1,599 @@
+/* Variables de Colores */
+:root {
+  --primary-color: #89dc00; /* Verde Merkahorro */
+  --secondary-color: #210d65; /* Azul Oscuro Merkahorro */
+  --light-color: #f4f4f9;
+  --text-color: #333;
+  --error-color: #e63946;
+  --success-color: #89dc00;
+  --background-color: #f0f2f5;
+  --border-color: #e0e0e0;
+  --hover-color: #76c400;
+}
+
+/* Contenedor principal */
+.gastos-container {
+  background-color: var(--background-color);
+  height: 100%;
+  padding: 20px 20px;
+}
+
+/* Header */
+.gastos-header {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 30px;
+  margin-top: 20px;
+  color: var(--secondary-color);
+  font-weight: 800;
+  text-transform: uppercase;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Tabla del historial */
+.gastos-historial {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 20px;
+  background-color: #fff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.gastos-historial h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: var(--secondary-color);
+}
+
+.gastos-historial table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 5px;
+}
+
+.gastos-historial th,
+.gastos-historial td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+}
+
+/* Ajuste de ancho para la columna de Descripción */
+.gastos-historial th:nth-child(8),
+.gastos-historial td:nth-child(8) {
+  min-width: 300px;
+  max-width: 500px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Ajuste de ancho para la columna de Observacion Responsable */
+.gastos-historial th:nth-child(14),
+.gastos-historial td:nth-child(14) {
+  min-width: 290px;
+  max-width: 500px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Ajuste de ancho para la columna de Factura */
+.gastos-historial th:nth-child(15),
+.gastos-historial td:nth-child(15) {
+  min-width: 290px;
+  max-width: 500px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Ajuste de ancho para la columna de Causacion */
+.gastos-historial th:nth-child(16),
+.gastos-historial td:nth-child(16) {
+  min-width: 200px;
+  max-width: 400px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Ajuste de ancho para la columna de Voucher */
+.gastos-historial th:nth-child(18),
+.gastos-historial td:nth-child(18) {
+  min-width: 130px;
+  max-width: 400px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Ajuste de ancho para la columna de Observación */
+.gastos-historial th:nth-child(19),
+.gastos-historial td:nth-child(19) {
+  min-width: 300px;
+  max-width: 500px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+/* Ajuste de ancho para la columna de Categoria */
+.gastos-historial th:nth-child(21),
+.gastos-historial td:nth-child(21) {
+  min-width: 200px;
+  max-width: 350px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+.gastos-historial th {
+  background-color: var(--secondary-color);
+  color: #fff;
+  font-weight: 600;
+}
+
+.gastos-historial tr:nth-child(even) {
+  background-color: var(--light-color);
+}
+
+.gastos-historial a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.gastos-historial a:hover {
+  text-decoration: underline;
+}
+
+/* Mensajes de estado */
+.gastos-submitted-message {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--success-color);
+  color: #fff;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.gastos-error-message {
+  text-align: center;
+  padding: 18px;
+  background-color: var(--error-color);
+  color: #fff;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .gastos-container {
+    padding: 20px;
+  }
+
+  .gastos-header {
+    font-size: 2.2rem;
+  }
+
+  .gastos-historial {
+    padding: 15px;
+  }
+
+  .gastos-historial h2 {
+    font-size: 1.5rem;
+  }
+
+  .gastos-historial th,
+  .gastos-historial td {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  .gastos-historial table,
+  .gastos-historial th,
+  .gastos-historial td {
+    font-size: 0.85rem;
+  }
+}
+
+/* Ampliar el contenedor en pantallas grandes */
+@media (min-width: 1700px) {
+  .gastos-historial {
+    max-width: 98vw;
+    width: 98vw;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  .hidden-rows-container {
+    max-width: 98vw;
+    width: 98vw;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+/* Estados */
+.estado-pendiente {
+  background-color: #ffbf00;
+  color: #000000;
+}
+
+.estado-aprobado {
+  background-color: #2ce056;
+  color: #000000;
+}
+
+.estado-rechazado {
+  background-color: #d33845;
+  color: #000000;
+}
+
+.observacion-textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.copy-button {
+  margin-left: 6px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background-color: #0056b3;
+}
+
+.accion-button.verificar {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+.accion-button.verificar:hover {
+  background-color: #357abd;
+  transform: translateY(-2px);
+}
+
+/* Contenedor para scroll horizontal con botones de navegación */
+.scroll-container-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ocultar scrollbar nativo en Webkit */
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Botones de navegación fijos en la pantalla */
+.scroll-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  width: 40px;
+  border: none;
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 2rem;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.4;
+  z-index: 1000;
+}
+
+.scroll-button:hover {
+  opacity: 1;
+}
+
+.scroll-button.left {
+  left: 10px;
+}
+
+.scroll-button.right {
+  right: 10px;
+}
+
+.eBdwMa {
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Estilos y animación para el buscador */
+.eBdwMa .busqueda-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  background-color: transparent !important;
+}
+
+.busqueda-boton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--secondary-color);
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.busqueda-boton:hover {
+  transform: scale(1.1);
+}
+
+/* Animaciones para el input de búsqueda */
+.busqueda-input {
+  width: 0;
+  opacity: 0;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-left: 10px;
+  animation: busqueda-animacion-desaparecer 0.4s forwards;
+}
+
+.busqueda-input.active {
+  animation: busqueda-animacion-aparecer 0.4s forwards;
+}
+
+@keyframes busqueda-animacion-aparecer {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 250px;
+    opacity: 1;
+  }
+}
+
+@keyframes busqueda-animacion-desaparecer {
+  from {
+    width: 250px;
+    opacity: 1;
+  }
+  to {
+    width: 0;
+    opacity: 0;
+  }
+}
+
+.busqueda-export-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Botón para exportar a Excel */
+.excel-button-gastos {
+  padding: 12px 25px;
+  margin-bottom: 20px;
+  background-color: #210d65;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
+}
+
+.excel-button-gastos:hover {
+  background-color: #89dc00;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Botón para editar fila (Nuevo estilo Unique) */
+.hg-btn-editar {
+  background-color: #ffffff;
+  color: var(--text-color);
+  border: 1px solid #bdc3c7;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-right: 5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.hg-btn-editar:hover {
+  background-color: #f0f4f8;
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Botón para ocultar fila (estilo llamativo) */
+.hg-btn-ocultar {
+  background-color: #e02c2c6b;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-left: 5px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.hg-btn-ocultar:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Botones Acción Edición: Guardar y Cancelar */
+.hg-btn-guardar {
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-right: 5px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.hg-btn-guardar:hover {
+  background-color: #6fb300;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.hg-btn-cancelar {
+  background-color: #fff;
+  color: #e53e3e;
+  border: 1px solid #e53e3e;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-left: 5px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.hg-btn-cancelar:hover {
+  background-color: #fff5f5;
+  transform: translateY(-2px);
+}
+
+/* Sección de filas ocultas */
+.hidden-rows-container {
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 1400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.hidden-rows-container h3 {
+  color: var(--secondary-color);
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+.hidden-rows-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.hidden-rows-container li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 0;
+}
+
+/* Botón para mostrar fila oculta individualmente */
+.boton-mostrar-oculto-individual {
+  background: linear-gradient(45deg, #42a5f5, #1e88e5);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.boton-mostrar-oculto-individual:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Botón para mostrar/ocultar la sección de filas ocultas */
+.boton-mostrar-ocultos {
+  background: linear-gradient(
+    45deg,
+    var(--secondary-color),
+    var(--secondary-color)
+  );
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin: 10px auto;
+  display: block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.boton-mostrar-ocultos:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Agregar a tu archivo HistorialGastos.css */
+.hg-btn-editar.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #cccccc;
+}
+
+.delete-file-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.status-select {
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.categoria-gasto-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.categoria-gasto-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Estilo para las opciones del datalist */
+datalist {
+  background-color: #fff;
+}
+
+/* Estilo para las opciones en navegadores que lo soportan */
+.categoria-gasto-input::-webkit-calendar-picker-indicator {
+  display: none; /* Oculta indicadores no deseados */
+}
