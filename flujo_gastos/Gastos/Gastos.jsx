@@ -78,6 +78,7 @@ const Gastos = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [token, setToken] = useState("");
   const [decision, setDecision] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   // const [historialGastos, setHistorialGastos] = useState([]); // Eliminamos este estado, useQuery lo gestionará
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
@@ -265,13 +266,6 @@ const Gastos = () => {
     }
   };
 
-  const handleSelectChange = (name, selectedOptions) => {
-    const selectedValues = selectedOptions
-      ? selectedOptions.map((option) => option.value)
-      : [];
-    setFormData({ ...formData, [name]: selectedValues });
-  };
-
   // --- Documentos de nuevos proveedores ---
   const handleToggleDocsProveedor = (e) => {
     const activar = e.target.checked;
@@ -299,6 +293,13 @@ const Gastos = () => {
     setDragActiveKey(null);
     const file = e.dataTransfer.files?.[0];
     handleDocProveedorFile(key, file);
+  };
+
+  const handleSelectChange = (name, selectedOptions) => {
+    const selectedValues = selectedOptions
+      ? selectedOptions.map((option) => option.value)
+      : [];
+    setFormData({ ...formData, [name]: selectedValues });
   };
 
   const handleSubmit = async (event) => {
@@ -379,6 +380,7 @@ const Gastos = () => {
       );
       setIsSubmitted(true);
       setDecision(response.data.decision);
+      setSuccessMessage(response.data.message);
       setErrorMessage("");
       setTimeout(() => {
         const correo = localStorage.getItem("correo_empleado");
@@ -386,6 +388,7 @@ const Gastos = () => {
           localStorage.getItem("empleado_info") || "{}"
         );
         setIsSubmitted(false);
+        setSuccessMessage("");
         setFormData({
           ...initialFormData,
           correo_empleado: correo || "",
@@ -811,9 +814,7 @@ const Gastos = () => {
         </div>
       ) : (
         <div className="gastos-submitted-message">
-          <h2>¡Solicitud Enviada Exitosamente!</h2>
-        </div>
-      )}
+          <h2>{successMessage || "¡Solicitud Enviada Exitosamente!"}</h2>
 
       <button onClick={toggleHistorial} className="historial-flotante-button">
         📜

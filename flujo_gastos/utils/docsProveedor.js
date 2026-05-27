@@ -36,10 +36,17 @@ export const documentosProveedorConfig = [
 // Dado el URL (o nombre) de un archivo de proveedor, devuelve el documento
 // correspondiente según el prefijo. Si no reconoce ninguno (archivos viejos
 // subidos antes de este cambio), devuelve una etiqueta genérica.
+//
+// El backend sube el archivo como ".../proveedores/{timestamp}_{Prefijo}_{nombre}".
+// El prefijo SIEMPRE va al inicio del nombre (tras el timestamp), por eso se
+// ancla ahí con startsWith en vez de buscar en cualquier parte del string
+// (evita falsos positivos si el nombre original contiene un prefijo conocido).
 export const getDocProveedorInfo = (url, index = 0) => {
   if (typeof url === "string") {
+    const fileName = decodeURIComponent(url.split("/").pop() || "");
+    const sinTimestamp = fileName.replace(/^\d+_/, ""); // quita "1716000000000_"
     const match = documentosProveedorConfig.find((doc) =>
-      url.includes(`_${doc.prefijo}_`)
+      sinTimestamp.startsWith(`${doc.prefijo}_`)
     );
     if (match) {
       return { label: match.label, icono: match.icono };

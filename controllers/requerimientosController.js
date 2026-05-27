@@ -180,29 +180,44 @@ export const crearRequerimiento = async (req, res) => {
       .join(",")}}`;
     const sedesPgArray = `{${sedesArray.map((item) => `"${item}"`).join(",")}}`;
 
+    const calcularTiempoBogota = () => {
+      const now = new Date();
+      const bogotaOffset = -5 * 60 * 60 * 1000;
+      const bogotaTime = new Date(now.getTime() + bogotaOffset);
+      return bogotaTime.toISOString();
+    };
+
+    const esAprobacionAutomatica = correo_empleado === "gestionhumana@merkahorro.com";
+
+    const datosInsercion = {
+      nombre_completo,
+      area,
+      procesos,
+      sede: sedesPgArray,
+      unidad: unidadPgArray,
+      centro_costos: centroCostosPgArray,
+      descripcion,
+      monto_estimado,
+      monto_sede,
+      anticipo,
+      tiempo_fecha_pago,
+      archivo_cotizacion: archivoCotizacionUrl,
+      archivos_proveedor: archivosProveedorUrls,
+      correo_empleado,
+      observacion: observacion_responsable || "", // ✅ CORREGIDO: Guardar en campo 'observacion' de la tabla
+      token,
+      estado: esAprobacionAutomatica ? "Aprobado" : "Pendiente",
+    };
+
+    if (esAprobacionAutomatica) {
+      datosInsercion.aprobado_por_correo = correo_empleado;
+      datosInsercion.aprobado_por_nombre = nombre_completo || "Diana Valencia";
+      datosInsercion.hora_cambio_estado = calcularTiempoBogota();
+    }
+
     const { data, error } = await supabase
       .from("Gastos")
-      .insert([
-        {
-          nombre_completo,
-          area,
-          procesos,
-          sede: sedesPgArray,
-          unidad: unidadPgArray,
-          centro_costos: centroCostosPgArray,
-          descripcion,
-          monto_estimado,
-          monto_sede,
-          anticipo,
-          tiempo_fecha_pago,
-          archivo_cotizacion: archivoCotizacionUrl,
-          archivos_proveedor: archivosProveedorUrls,
-          correo_empleado,
-          observacion: observacion_responsable || "", // ✅ CORREGIDO: Guardar en campo 'observacion' de la tabla
-          token,
-          estado: "Pendiente",
-        },
-      ])
+      .insert([datosInsercion])
       .select();
 
     console.log("✅ Registro insertado con observacion:", observacion_responsable);
@@ -210,6 +225,13 @@ export const crearRequerimiento = async (req, res) => {
     if (error) {
       console.error("❌ Error al insertar en Supabase:", error);
       return res.status(500).json({ error: error.message });
+    }
+
+    if (esAprobacionAutomatica) {
+      return res.status(201).json({
+        message: "Tu solicitud de gasto ha sido aprobada automáticamente.",
+        token,
+      });
     }
 
     const destinatarioEncargado = obtenerJefePorEmpleado(correo_empleado);
