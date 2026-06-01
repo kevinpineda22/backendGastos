@@ -15,6 +15,12 @@ const allowedOrigins = [
 
 const app = express();
 
+// Vercel mete los requests detrás de un proxy que setea X-Forwarded-For.
+// Sin esto, express-rate-limit no confía en ese header y tira
+// ERR_ERL_FORWARDED_HEADER, además de contar a TODOS los usuarios como una
+// sola IP. Confiamos en el primer proxy (Vercel).
+app.set("trust proxy", 1);
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);

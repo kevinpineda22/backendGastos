@@ -96,6 +96,8 @@ export const crearRequerimiento = async (req, res) => {
     correo_empleado,
     monto_sede,
     observacion_responsable, // ✅ CORREGIDO: Este es para el campo "Observación:" del formulario
+    archivo_cotizacion, // URL ya subida a Supabase desde el navegador
+    archivos_proveedor, // Array de URLs ya subidas a Supabase desde el navegador
   } = req.body;
 
   // ✅ NUEVO: Log para debug
@@ -103,14 +105,16 @@ export const crearRequerimiento = async (req, res) => {
     observacion_responsable, // Del formulario
   });
 
-  const archivoCotizacion = req.files["archivo_cotizacion"]
-    ? req.files["archivo_cotizacion"][0]
-    : null;
-  const archivosProveedor = req.files["archivos_proveedor"] || [];
+  // Los archivos ya NO pasan por el backend: el navegador los sube directo a
+  // Supabase y acá solo recibimos las URLs públicas.
+  const archivoCotizacionUrl = archivo_cotizacion;
+  const archivosProveedorUrls = Array.isArray(archivos_proveedor)
+    ? archivos_proveedor
+    : [];
 
   console.log("Correo del solicitante recibido:", correo_empleado);
 
-  if (!archivoCotizacion) {
+  if (!archivoCotizacionUrl) {
     return res
       .status(400)
       .json({ error: "El archivo de cotización es obligatorio." });
@@ -119,53 +123,6 @@ export const crearRequerimiento = async (req, res) => {
   const token = crypto.randomBytes(16).toString("hex");
 
   try {
-    let archivoCotizacionUrl = "";
-    if (archivoCotizacion) {
-      const uniqueFileName = `${Date.now()}_${sanitizeFileName(
-        archivoCotizacion.originalname
-      )}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("cotizaciones")
-        .upload(`cotizaciones/${uniqueFileName}`, archivoCotizacion.buffer, {
-          contentType: archivoCotizacion.mimetype,
-        });
-
-      if (uploadError) {
-        console.error(
-          "❌ Error al subir el archivo de cotización a Supabase:",
-          uploadError
-        );
-        return res.status(500).json({ error: uploadError.message });
-      }
-
-      archivoCotizacionUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
-    }
-
-    let archivosProveedorUrls = [];
-    if (archivosProveedor && archivosProveedor.length > 0) {
-      for (let archivo of archivosProveedor) {
-        const uniqueFileName = `${Date.now()}_${sanitizeFileName(
-          archivo.originalname
-        )}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("cotizaciones")
-          .upload(`proveedores/${uniqueFileName}`, archivo.buffer, {
-            contentType: archivo.mimetype,
-          });
-
-        if (uploadError) {
-          console.error(
-            "❌ Error al subir el archivo del proveedor a Supabase:",
-            uploadError
-          );
-          return res.status(500).json({ error: uploadError.message });
-        }
-
-        const archivoUrl = `https://pitpougbnibmfrjykzet.supabase.co/storage/v1/object/public/cotizaciones/${uploadData.path}`;
-        archivosProveedorUrls.push(archivoUrl);
-      }
-    }
-
     const unidadArray = Array.isArray(unidad) ? unidad : [unidad];
     const centroCostosArray = Array.isArray(centro_costos)
       ? centro_costos
@@ -308,28 +265,13 @@ export const crearRequerimiento = async (req, res) => {
     </html>
     `;
 
-    const archivoAdjunto = [];
-    archivoAdjunto.push({
-      filename: archivoCotizacion.originalname,
-      content: archivoCotizacion.buffer,
-      encoding: "base64",
-    });
-
-    if (archivosProveedor && archivosProveedor.length > 0) {
-      archivosProveedor.forEach((archivo) => {
-        archivoAdjunto.push({
-          filename: archivo.originalname,
-          content: archivo.buffer,
-          encoding: "base64",
-        });
-      });
-    }
-
+    // Los archivos ya viven en Supabase: el correo enlaza a ellos (ver template
+    // arriba), no hace falta adjuntar binarios. Correo más liviano y sin tope.
     await sendEmail({
       to: destinatarioEncargado,
       subject: "Nuevo Requerimiento de Gasto",
       htmlContent: mensajeEncargado,
-      attachments: archivoAdjunto,
+      attachments: [],
     });
 
     return res.status(201).json({

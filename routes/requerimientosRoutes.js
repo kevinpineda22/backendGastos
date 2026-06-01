@@ -23,15 +23,10 @@ const upload = multer({ storage });
 // Ruta para eliminar un requerimiento
 router.delete("/eliminar/:id", eliminarRequerimiento);
 
-// Ruta para crear un requerimiento con carga de archivo
-router.post(
-  "/crear",
-  upload.fields([
-    { name: "archivo_cotizacion", maxCount: 1 }, // Para el archivo de cotización
-    { name: "archivos_proveedor", maxCount: 5 }, // Para los archivos del proveedor (RUT, cámara, cédula, certificación bancaria, referencias)
-  ]),
-  crearRequerimiento
-);
+// Ruta para crear un requerimiento. Los archivos se suben directo a Supabase
+// desde el navegador; aquí solo llegan las URLs en un JSON liviano. Por eso ya
+// NO se usa multer (los archivos nunca pasan por Vercel → adiós límite 4.5MB).
+router.post("/crear", crearRequerimiento);
 
 // Ruta para adjuntar vouchers
 router.post(

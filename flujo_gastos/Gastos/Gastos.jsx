@@ -815,6 +815,8 @@ const Gastos = () => {
       ) : (
         <div className="gastos-submitted-message">
           <h2>{successMessage || "¡Solicitud Enviada Exitosamente!"}</h2>
+        </div>
+      )}
 
       <button onClick={toggleHistorial} className="historial-flotante-button">
         📜
