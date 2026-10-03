@@ -80,8 +80,29 @@ const verificarPermisos = (correo_usuario, accion) => {
   }
 };
 
+// Cierre mensual: del día 26 a fin de mes no se crean gastos; el día 1 se
+// habilita otra vez. El frontend (Pagina-web_React,
+// src/pages/flujo_gastos/utils/cierreMensual.js) tiene la misma regla para
+// mostrar el aviso; si cambias el día, cámbialo en los dos lados.
+const DIA_CIERRE_GASTOS = 26;
+const diaDelMesBogota = (fecha = new Date()) =>
+  Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Bogota",
+      day: "numeric",
+    }).format(fecha)
+  );
+
 // ✅ Crear requerimiento
 export const crearRequerimiento = async (req, res) => {
+  if (diaDelMesBogota() >= DIA_CIERRE_GASTOS) {
+    return res.status(403).json({
+      codigo: "CIERRE_MENSUAL",
+      error:
+        "Desde el día 26 de cada mes no se pueden registrar gastos. Comunícate con tu jefe inmediato. El registro se habilita de nuevo el día 1 del próximo mes.",
+    });
+  }
+
   const {
     nombre_completo,
     area,
